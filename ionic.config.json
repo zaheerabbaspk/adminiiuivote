@@ -1,0 +1,7 @@
+{
+  "name": "adminiiuivote",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
