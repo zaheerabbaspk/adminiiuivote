@@ -118,8 +118,9 @@
 
     <ion-modal [isOpen]="isModalOpen" (didDismiss)="isModalOpen = false" class="voter-modal">
         <ng-template>
-            <div class="flex flex-col h-full bg-white rounded-t-3xl overflow-hidden font-sans">
-                <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+            <div class="flex flex-col h-full bg-white font-sans overflow-hidden">
+                <!-- Header -->
+                <div class="p-6 border-b border-slate-100 flex items-center justify-between shrink-0 bg-white">
                     <h3 class="text-xl font-black text-slate-900 tracking-tight">Manual Registration</h3>
                     <button (click)="isModalOpen = false"
                         class="p-2 text-slate-400 hover:text-slate-600 transition-colors">
@@ -131,42 +132,56 @@
                     </button>
                 </div>
 
-                <form [formGroup]="voterForm" (ngSubmit)="addVoter()"
-                    class="p-8 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full
-                            Name</label>
-                        <input type="text" formControlName="name"
-                            class="block w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-slate-900 font-bold focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
-                            placeholder="Enter voter's full name">
-                    </div>
+                <!-- Content -->
+                <div class="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/20">
+                    <form [formGroup]="voterForm" id="voterForm" (ngSubmit)="addVoter()" class="p-8 space-y-6">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full
+                                Name</label>
+                            <input type="text" formControlName="name"
+                                class="block w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl text-slate-900 font-bold focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
+                                placeholder="Enter voter's full name">
+                        </div>
 
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email
-                            Address</label>
-                        <input type="email" formControlName="email"
-                            class="block w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-slate-900 font-bold focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
-                            placeholder="name@example.com">
-                    </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email
+                                Address</label>
+                            <input type="email" formControlName="email"
+                                class="block w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl text-slate-900 font-bold focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
+                                placeholder="name@example.com">
+                        </div>
 
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Target
-                            Election</label>
-                        <select formControlName="electionId"
-                            class="block w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-slate-900 font-bold focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all outline-none appearance-none cursor-pointer">
-                            <option value="" disabled selected>Assign to an election cycle...</option>
-                            <option *ngFor="let election of elections()" [value]="election.id">{{ election.name }}
-                            </option>
-                        </select>
-                    </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Target
+                                Election</label>
+                            <div class="relative">
+                                <select formControlName="electionId"
+                                    class="block w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl text-slate-900 font-bold focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none appearance-none cursor-pointer">
+                                    <option value="" disabled selected>Assign to an election cycle...</option>
+                                    <option *ngFor="let election of elections()" [value]="election.id">{{ election.name
+                                        }}
+                                    </option>
+                                </select>
+                                <div
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
 
-                    <div class="pt-6">
-                        <button type="submit" [disabled]="voterForm.invalid"
-                            class="w-full py-4 bg-blue-600 text-white font-black rounded-2xl shadow-xl shadow-blue-500/30 hover:bg-blue-700 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none">
-                            Authorize Voter
-                        </button>
-                    </div>
-                </form>
+                <!-- Footer -->
+                <div class="p-8 border-t border-slate-50 bg-white shrink-0">
+                    <button type="submit" form="voterForm" [disabled]="voterForm.invalid"
+                        class="w-full py-4 bg-blue-600 text-white font-black rounded-2xl shadow-xl shadow-blue-500/30 hover:bg-blue-700 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none">
+                        Authorize Voter
+                    </button>
+                </div>
             </div>
         </ng-template>
     </ion-modal>
@@ -174,9 +189,9 @@
 
 <style>
     .voter-modal {
-        --height: auto;
-        --max-height: 80vh;
-        --width: 100%;
+        --height: 80vh;
+        --min-height: 400px;
+        --width: 92%;
         --max-width: 500px;
         --border-radius: 24px;
     }

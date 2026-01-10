@@ -93,8 +93,9 @@
     <!-- Add Modal -->
     <ion-modal [isOpen]="isModalOpen" (didDismiss)="isModalOpen = false" class="candidate-modal">
         <ng-template>
-            <div class="flex flex-col h-full bg-white rounded-t-3xl overflow-hidden font-sans">
-                <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+            <div class="flex flex-col h-full bg-white font-sans overflow-hidden">
+                <!-- Header -->
+                <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between shrink-0 bg-white">
                     <h3 class="text-xl font-black text-slate-900 tracking-tight">Register Candidate</h3>
                     <button (click)="isModalOpen = false"
                         class="p-2 text-slate-400 hover:text-slate-600 transition-colors">
@@ -106,60 +107,75 @@
                     </button>
                 </div>
 
-                <form [formGroup]="candidateForm" (ngSubmit)="saveCandidate()"
-                    class="p-8 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full
-                            Name</label>
-                        <input type="text" formControlName="name"
-                            class="block w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-slate-900 font-bold focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
-                            placeholder="Enter candidate name">
-                    </div>
+                <!-- Scrollable Content -->
+                <div class="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/20">
+                    <form [formGroup]="candidateForm" id="candidateForm" (ngSubmit)="saveCandidate()"
+                        class="p-8 space-y-6">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full
+                                Name</label>
+                            <input type="text" formControlName="name"
+                                class="block w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl text-slate-900 font-bold focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
+                                placeholder="Enter candidate name">
+                        </div>
 
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Party /
-                            Affiliation</label>
-                        <input type="text" formControlName="party"
-                            class="block w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-slate-900 font-bold focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
-                            placeholder="e.g. Progressive Party">
-                    </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Party /
+                                Affiliation</label>
+                            <input type="text" formControlName="party"
+                                class="block w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl text-slate-900 font-bold focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
+                                placeholder="e.g. Progressive Party">
+                        </div>
 
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Assigned
-                            Election</label>
-                        <select formControlName="electionId"
-                            class="block w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-slate-900 font-bold focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none appearance-none cursor-pointer">
-                            <option value="" disabled selected>Select an election...</option>
-                            <option *ngFor="let election of elections()" [value]="election.id">{{ election.name }}
-                            </option>
-                        </select>
-                        <p *ngIf="elections().length === 0"
-                            class="text-[10px] font-bold text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-100 mt-2 flex items-center">
-                            <!-- warning icon -->
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                                stroke="currentColor" class="w-4 h-4 mr-1">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
-                            </svg>
-                            You must create an election first.
-                        </p>
-                    </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Assigned
+                                Election</label>
+                            <div class="relative">
+                                <select formControlName="electionId"
+                                    class="block w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl text-slate-900 font-bold focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none appearance-none cursor-pointer">
+                                    <option value="" disabled selected>Select an election...</option>
+                                    <option *ngFor="let election of elections()" [value]="election.id">{{ election.name
+                                        }}
+                                    </option>
+                                </select>
+                                <div
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <p *ngIf="elections().length === 0"
+                                class="text-[10px] font-bold text-amber-600 bg-amber-50 p-3 rounded-xl border border-amber-100 mt-2 flex items-center">
+                                <!-- warning icon -->
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                    stroke="currentColor" class="w-4 h-4 mr-2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                                </svg>
+                                You must create an election first.
+                            </p>
+                        </div>
 
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Profile
-                            Image URL (Optional)</label>
-                        <input type="text" formControlName="imageUrl"
-                            class="block w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-slate-900 font-bold focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
-                            placeholder="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix">
-                    </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Profile
+                                Image URL (Optional)</label>
+                            <input type="text" formControlName="imageUrl"
+                                class="block w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl text-slate-900 font-bold focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
+                                placeholder="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix">
+                        </div>
+                    </form>
+                </div>
 
-                    <div class="pt-6">
-                        <button type="submit" [disabled]="candidateForm.invalid"
-                            class="w-full py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-xl shadow-indigo-500/30 hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none">
-                            Save Candidate Profile
-                        </button>
-                    </div>
-                </form>
+                <!-- Footer -->
+                <div class="p-8 border-t border-slate-100 bg-white shrink-0">
+                    <button type="submit" form="candidateForm" [disabled]="candidateForm.invalid"
+                        class="w-full py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-xl shadow-indigo-500/30 hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none">
+                        Save Candidate Profile
+                    </button>
+                </div>
             </div>
         </ng-template>
     </ion-modal>
@@ -167,9 +183,9 @@
 
 <style>
     .candidate-modal {
-        --height: auto;
-        --max-height: 90vh;
-        --width: 100%;
+        --height: 85vh;
+        --min-height: 500px;
+        --width: 92%;
         --max-width: 500px;
         --border-radius: 24px;
     }
