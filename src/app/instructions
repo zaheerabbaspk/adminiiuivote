@@ -1,0 +1,361 @@
+ADMIN PANEL UI FLOW SPEC
+
+Tech constraints
+
+Ionic Framework (latest)
+
+Angular v16+
+
+Standalone components only
+
+No NgModules
+
+Use Angular Signals for state management
+
+Use input() signal inputs, not @Input()
+
+Use effect() and computed() where appropriate
+
+Routing via standalone provideRouter
+
+Forms via ReactiveFormsModule (standalone import)
+
+1. Application Structure
+Root layout
+
+App uses a split-pane layout:
+
+Left: Admin sidebar navigation
+
+Right: Routed content outlet
+
+Required root components
+
+AppComponent (standalone)
+
+AdminLayoutComponent (shell for all admin routes)
+
+2. Routing Structure (Standalone)
+
+Define routes using provideRouter.
+
+/admin
+  ├── dashboard
+  ├── elections
+  │     ├── list
+  │     └── create
+  ├── candidates
+  ├── voters
+  ├── voting-control
+  ├── results
+  └── audit-logs
+
+
+All routes under /admin use AdminLayoutComponent as the parent.
+
+3. AdminLayoutComponent
+Responsibilities
+
+Persistent sidebar
+
+Top header with admin info and logout button
+
+<ion-router-outlet> for child views
+
+Sidebar navigation items
+
+Dashboard
+
+Elections
+
+Candidates
+
+Voters
+
+Voting Control
+
+Results
+
+Audit Logs
+
+Behavior
+
+Highlight active route
+
+Sidebar collapses on small screens
+
+4. Dashboard Component
+Component
+
+AdminDashboardComponent
+
+UI sections
+
+Stats cards
+
+Total voters
+
+Total candidates
+
+Total votes cast
+
+Election status
+
+System alerts panel
+
+Warnings or system messages
+
+Data handling
+
+Use signals for dashboard state
+
+Use computed() for derived values
+
+Read-only UI, no mutations here
+
+5. Election Management
+Components
+
+ElectionListComponent
+
+ElectionCreateComponent
+
+ElectionListComponent
+UI
+
+Table or list of elections
+
+Columns:
+
+Election name
+
+Status (Draft / Active / Ended)
+
+Start date
+
+End date
+
+Action buttons:
+
+View
+
+Edit (disabled if election is active or ended)
+
+Behavior
+
+Clicking "Create Election" navigates to /admin/elections/create
+
+ElectionCreateComponent
+UI
+
+Reactive form with:
+
+Election name
+
+Description
+
+Start datetime
+
+End datetime
+
+Submit button
+
+Cancel button
+
+Validation rules
+
+Start date must be before end date
+
+All fields required
+
+Data flow
+
+Form state managed via signals
+
+On submit:
+
+Call service
+
+Navigate back to election list
+
+6. Candidate Management
+Component
+
+CandidateManagementComponent
+
+UI
+
+Candidate list with:
+
+Name
+
+Party/Group
+
+Assigned election
+
+Actions:
+
+Add candidate
+
+Edit candidate
+
+Delete candidate (disabled if election is active)
+
+Add/Edit Modal
+
+Use Ionic modal
+
+Reactive form
+
+Submit and cancel actions
+
+7. Voter Management
+Component
+
+VoterManagementComponent
+
+UI
+
+Table of voters
+
+Columns:
+
+Name
+
+Email / ID
+
+Voting status
+
+Account status
+
+Actions:
+
+Activate / Deactivate
+
+Reset credentials
+
+Optional
+
+CSV upload button for bulk voter creation
+
+8. Voting Control
+Component
+
+VotingControlComponent
+
+UI
+
+Current election status indicator
+
+Control buttons:
+
+Start voting
+
+Pause voting
+
+End voting
+
+Behavior
+
+Buttons enabled/disabled based on election state
+
+Confirmation dialog before state changes
+
+9. Results View
+Component
+
+ResultsComponent
+
+UI
+
+Candidate-wise vote counts
+
+Percentage bars or charts
+
+Export buttons:
+
+Export CSV
+
+Export PDF
+
+Rules
+
+Results only visible when election status is Ended
+
+Disable UI otherwise
+
+10. Audit Logs
+Component
+
+AuditLogComponent
+
+UI
+
+Read-only table
+
+Columns:
+
+Timestamp
+
+Actor (Admin ID)
+
+Action
+
+Target entity
+
+Behavior
+
+Pagination
+
+Filter by action type
+
+11. State Management Rules
+
+No NgRx
+
+Use:
+
+signal() for local state
+
+computed() for derived data
+
+effect() for side effects
+
+Use services with signals to share state between components
+
+12. Component Input Rules
+
+All component inputs must use:
+
+readonly data = input<Type>();
+
+
+No @Input()
+
+No @Output(); use callback signals or services
+
+13. UI Rules
+
+Ionic components only (ion-card, ion-list, ion-button, etc.)
+
+No direct DOM manipulation
+
+No template-driven forms
+
+14. Error Handling
+
+Display form validation errors inline
+
+Show Ionic alerts for critical errors
+
+Disable actions while async operations are pending
+
+15. Code Quality Constraints
+
+One responsibility per component
+
+No business logic in templates
+
+Services handle API interaction only
+
+All components must be standalone

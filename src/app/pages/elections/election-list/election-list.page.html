@@ -1,0 +1,90 @@
+<div class="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-3xl font-black text-slate-900 tracking-tight">Elections</h2>
+            <p class="text-slate-500 font-medium">Manage and monitor all election cycles.</p>
+        </div>
+        <button routerLink="/admin/elections/create"
+            class="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 hover:bg-blue-700 hover:-translate-y-0.5 transition-all active:scale-95">
+            <ion-icon name="add-outline" class="text-xl"></ion-icon>
+            <span>Create Election</span>
+        </button>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-slate-50/50">
+                    <tr>
+                        <th
+                            class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                            Election Name</th>
+                        <th
+                            class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                            Status</th>
+                        <th
+                            class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                            Schedule</th>
+                        <th
+                            class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 text-right">
+                            Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    <tr *ngFor="let election of elections()" class="hover:bg-slate-50/30 transition-colors group">
+                        <td class="px-6 py-5">
+                            <div>
+                                <p class="text-sm font-bold text-slate-800">{{ election.name }}</p>
+                                <p class="text-xs text-slate-400 line-clamp-1 mt-0.5">{{ election.description }}</p>
+                            </div>
+                        </td>
+                        <td class="px-6 py-5">
+                            <span
+                                [class]="'px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ' + getStatusBadgeClass(election.status)">
+                                {{ election.status }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-5">
+                            <div class="flex flex-col">
+                                <span class="text-xs font-bold text-slate-600 flex items-center">
+                                    <ion-icon name="calendar-outline" class="mr-1.5 text-slate-400"></ion-icon>
+                                    {{ election.startDate | date:'short' }}
+                                </span>
+                                <span class="text-[10px] font-medium text-slate-400 mt-0.5 pl-5">to {{ election.endDate
+                                    | date:'short' }}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-5 text-right">
+                            <div
+                                class="flex items-center justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button
+                                    class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                    title="View Details">
+                                    <ion-icon name="eye-outline" class="text-lg"></ion-icon>
+                                </button>
+                                <button
+                                    class="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all"
+                                    title="Edit" [disabled]="election.status === 'Ended'">
+                                    <ion-icon name="create-outline" class="text-lg"></ion-icon>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr *ngIf="elections().length === 0">
+                        <td colspan="4" class="px-6 py-20 text-center">
+                            <div class="flex flex-col items-center">
+                                <div class="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                                    <ion-icon name="file-tray-outline" class="text-4xl text-slate-200"></ion-icon>
+                                </div>
+                                <h4 class="text-lg font-bold text-slate-900">No elections found</h4>
+                                <p class="text-sm text-slate-500 max-w-xs mt-1">Start by creating your first election
+                                    cycle using the button above.</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

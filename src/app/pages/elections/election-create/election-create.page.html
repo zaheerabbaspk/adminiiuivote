@@ -1,0 +1,96 @@
+<div class="max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <!-- Header -->
+    <div class="mb-8 flex items-center justify-between">
+        <div>
+            <h2 class="text-3xl font-black text-slate-900 tracking-tight">Create Election</h2>
+            <p class="text-slate-500 font-medium">Configure a new voting cycle for the system.</p>
+        </div>
+        <button routerLink="/admin/elections" class="p-2 text-slate-400 hover:text-slate-600 transition-colors">
+            <ion-icon name="close-outline" class="text-3xl"></ion-icon>
+        </button>
+    </div>
+
+    <!-- Form Card -->
+    <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+        <form [formGroup]="electionForm" (ngSubmit)="onSubmit()" class="p-10 space-y-8">
+            <div class="grid grid-cols-1 gap-y-8">
+                <!-- Election Name -->
+                <div class="space-y-2">
+                    <label class="text-sm font-black text-slate-700 uppercase tracking-widest ml-1">Election
+                        Name</label>
+                    <div class="relative group">
+                        <div
+                            class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                            <ion-icon name="ribbon-outline" class="text-xl"></ion-icon>
+                        </div>
+                        <input type="text" formControlName="name" placeholder="e.g. Presidential Election 2026"
+                            class="block w-full pl-12 pr-4 py-4 bg-slate-50 border border-transparent rounded-2xl text-slate-900 font-bold placeholder:text-slate-300 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none">
+                    </div>
+                    <p *ngIf="electionForm.get('name')?.touched && electionForm.get('name')?.errors?.['required']"
+                        class="text-xs font-bold text-rose-500 ml-1">Election name is required.</p>
+                </div>
+
+                <!-- Description -->
+                <div class="space-y-2">
+                    <label class="text-sm font-black text-slate-700 uppercase tracking-widest ml-1">Description</label>
+                    <textarea formControlName="description" rows="4"
+                        placeholder="Provide context about this election..."
+                        class="block w-full px-5 py-4 bg-slate-50 border border-transparent rounded-2xl text-slate-900 font-medium placeholder:text-slate-300 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none resize-none"></textarea>
+                </div>
+
+                <!-- Dates Grid -->
+                <div
+                    class="grid grid-cols-1 md:grid-cols-2 gap-8 py-4 px-6 bg-slate-50 rounded-3xl border border-slate-100/50">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Start Date &
+                            Time</label>
+                        <input type="datetime-local" formControlName="startDate"
+                            class="block w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-800 font-bold focus:border-blue-500 transition-all outline-none">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">End Date &
+                            Time</label>
+                        <input type="datetime-local" formControlName="endDate"
+                            class="block w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-800 font-bold focus:border-blue-500 transition-all outline-none">
+                    </div>
+                    <div *ngIf="electionForm.errors?.['dateError'] && electionForm.get('endDate')?.touched"
+                        class="md:col-span-2">
+                        <p
+                            class="text-[10px] font-bold text-rose-500 bg-rose-50 p-2 rounded-lg border border-rose-100 flex items-center">
+                            <ion-icon name="alert-circle" class="mr-2 text-sm"></ion-icon>
+                            The end date must be after the start date.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Status & Actions -->
+                <div class="flex flex-col sm:flex-row items-center justify-between pt-6 border-t border-slate-50 gap-6">
+                    <div class="flex items-center space-x-6">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Initial
+                                Status</span>
+                            <select formControlName="status"
+                                class="bg-slate-50 border-none text-slate-700 font-bold text-sm focus:ring-0 cursor-pointer">
+                                <option value="Draft">Draft</option>
+                                <option value="Active">Active</option>
+                                <option value="Ended">Ended</option>
+                                <option value="Paused">Paused</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-4 w-full sm:w-auto">
+                        <button type="button" routerLink="/admin/elections"
+                            class="flex-1 sm:flex-none px-8 py-4 text-slate-500 font-bold hover:text-slate-800 transition-colors">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                            class="flex-1 sm:flex-none px-10 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:-translate-y-1 active:scale-95 transition-all">
+                            Launch Cycle
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,140 @@
+<div class="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-3xl font-black text-slate-900 tracking-tight">Candidates</h2>
+            <p class="text-slate-500 font-medium">Manage candidates and their affiliations.</p>
+        </div>
+        <button (click)="openAddModal()"
+            class="flex items-center space-x-2 px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/25 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all active:scale-95">
+            <ion-icon name="person-add-outline" class="text-xl"></ion-icon>
+            <span>Add Candidate</span>
+        </button>
+    </div>
+
+    <!-- Candidates Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div *ngFor="let candidate of candidates()"
+            class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:border-indigo-100 transition-all group overflow-hidden relative">
+            <div class="flex items-start justify-between">
+                <div class="flex items-center space-x-4">
+                    <div
+                        class="h-16 w-16 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300 overflow-hidden relative group-hover:bg-indigo-50 transition-colors">
+                        <img *ngIf="candidate.imageUrl" [src]="candidate.imageUrl" class="h-full w-full object-cover">
+                        <ion-icon *ngIf="!candidate.imageUrl" name="person" class="text-3xl"></ion-icon>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-slate-900 text-lg tracking-tight">{{ candidate.name }}</h3>
+                        <p class="text-xs font-bold text-indigo-500 uppercase tracking-widest">{{ candidate.party }}</p>
+                    </div>
+                </div>
+                <button (click)="deleteCandidate(candidate.id)"
+                    class="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all opacity-0 group-hover:opacity-100">
+                    <ion-icon name="trash-outline" class="text-lg"></ion-icon>
+                </button>
+            </div>
+
+            <div class="mt-6 pt-6 border-t border-slate-50">
+                <div class="flex items-center justify-between text-xs font-bold">
+                    <span class="text-slate-400 uppercase tracking-widest">Election</span>
+                    <span class="text-slate-700 bg-slate-100 px-2 py-1 rounded-md">{{
+                        getElectionName(candidate.electionId) }}</span>
+                </div>
+                <div class="flex items-center justify-between mt-4">
+                    <span class="text-xs font-black text-slate-400 uppercase tracking-widest">Total Votes</span>
+                    <span class="text-2xl font-black text-slate-900">{{ candidate.votes }}</span>
+                </div>
+            </div>
+
+            <!-- Decorative Background Icon -->
+            <ion-icon name="ribbon" class="absolute -right-4 -bottom-4 text-8xl text-indigo-500/5 rotate-12"></ion-icon>
+        </div>
+
+        <div *ngIf="candidates().length === 0"
+            class="md:col-span-2 lg:col-span-3 bg-white rounded-3xl p-20 text-center border-2 border-dashed border-slate-200">
+            <ion-icon name="people-outline" class="text-6xl text-slate-200 mb-4"></ion-icon>
+            <h4 class="text-xl font-bold text-slate-900">No candidates registered</h4>
+            <p class="text-slate-500 max-w-sm mx-auto mt-2">Associate candidates with your elections to start the voting
+                process.</p>
+            <button (click)="openAddModal()"
+                class="mt-8 text-indigo-600 font-black flex items-center justify-center space-x-2 mx-auto hover:indigo-700">
+                <span>Click here to add your first candidate</span>
+                <ion-icon name="arrow-forward"></ion-icon>
+            </button>
+        </div>
+    </div>
+
+    <!-- Add Modal -->
+    <ion-modal [isOpen]="isModalOpen" (didDismiss)="isModalOpen = false" class="candidate-modal">
+        <ng-template>
+            <div class="flex flex-col h-full bg-white rounded-t-3xl overflow-hidden font-sans">
+                <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+                    <h3 class="text-xl font-black text-slate-900 tracking-tight">Register Candidate</h3>
+                    <button (click)="isModalOpen = false"
+                        class="p-2 text-slate-400 hover:text-slate-600 transition-colors">
+                        <ion-icon name="close-outline" class="text-2xl"></ion-icon>
+                    </button>
+                </div>
+
+                <form [formGroup]="candidateForm" (ngSubmit)="saveCandidate()"
+                    class="p-8 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full
+                            Name</label>
+                        <input type="text" formControlName="name"
+                            class="block w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-slate-900 font-bold focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
+                            placeholder="Enter candidate name">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Party /
+                            Affiliation</label>
+                        <input type="text" formControlName="party"
+                            class="block w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-slate-900 font-bold focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
+                            placeholder="e.g. Progressive Party">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Assigned
+                            Election</label>
+                        <select formControlName="electionId"
+                            class="block w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-slate-900 font-bold focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none appearance-none cursor-pointer">
+                            <option value="" disabled selected>Select an election...</option>
+                            <option *ngFor="let election of elections()" [value]="election.id">{{ election.name }}
+                            </option>
+                        </select>
+                        <p *ngIf="elections().length === 0"
+                            class="text-[10px] font-bold text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-100 mt-2">
+                            <ion-icon name="warning" class="mr-1"></ion-icon>
+                            You must create an election first.
+                        </p>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Profile
+                            Image URL (Optional)</label>
+                        <input type="text" formControlName="imageUrl"
+                            class="block w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-slate-900 font-bold focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
+                            placeholder="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix">
+                    </div>
+
+                    <div class="pt-6">
+                        <button type="submit" [disabled]="candidateForm.invalid"
+                            class="w-full py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-xl shadow-indigo-500/30 hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none">
+                            Save Candidate Profile
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </ng-template>
+    </ion-modal>
+</div>
+
+<style>
+    .candidate-modal {
+        --height: auto;
+        --max-height: 90vh;
+        --width: 100%;
+        --max-width: 500px;
+        --border-radius: 24px;
+    }
+</style>

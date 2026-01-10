@@ -1,0 +1,93 @@
+<div class="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-3xl font-black text-slate-900 tracking-tight">Voting Control</h2>
+            <p class="text-slate-500 font-medium">Control the lifecycle of your election cycles.</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div *ngFor="let election of elections()"
+            class="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 hover:shadow-xl hover:border-blue-100 transition-all flex flex-col group relative overflow-hidden">
+
+            <!-- Top Info -->
+            <div class="flex items-start justify-between relative z-10">
+                <div class="space-y-1">
+                    <h3 class="text-xl font-black text-slate-900 tracking-tight">{{ election.name }}</h3>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center">
+                        <ion-icon name="time-outline" class="mr-1.5"></ion-icon>
+                        Ends: {{ election.endDate | date:'medium' }}
+                    </p>
+                </div>
+                <div
+                    [class]="'flex items-center space-x-2 px-4 py-2 rounded-2xl border transition-colors ' + getStatusColorClass(election.status)">
+                    <ion-icon [name]="getStatusIcon(election.status)" class="text-xl"></ion-icon>
+                    <span class="text-xs font-black uppercase tracking-widest">{{ election.status }}</span>
+                </div>
+            </div>
+
+            <!-- Current Status Visualization -->
+            <div
+                class="my-10 py-10 px-6 bg-slate-50/50 rounded-3xl border border-dashed border-slate-200 flex flex-col items-center justify-center space-y-4 relative z-10">
+                <div *ngIf="election.status === 'Active'" class="relative">
+                    <div class="absolute inset-0 bg-emerald-500 rounded-full animate-ping opacity-20"></div>
+                    <div
+                        class="h-16 w-16 bg-emerald-500 rounded-full flex items-center justify-center text-white text-3xl shadow-lg shadow-emerald-500/30">
+                        <ion-icon name="radio-outline"></ion-icon>
+                    </div>
+                </div>
+                <div *ngIf="election.status === 'Paused'"
+                    class="h-16 w-16 bg-amber-500 rounded-full flex items-center justify-center text-white text-3xl shadow-lg shadow-amber-500/30">
+                    <ion-icon name="pause"></ion-icon>
+                </div>
+                <div *ngIf="election.status === 'Draft' || election.status === 'Ended'"
+                    class="h-16 w-16 bg-slate-300 rounded-full flex items-center justify-center text-white text-3xl">
+                    <ion-icon [name]="election.status === 'Draft' ? 'create' : 'stop'"></ion-icon>
+                </div>
+
+                <div class="text-center">
+                    <p class="text-sm font-black text-slate-800 tracking-tight">
+                        {{ election.status === 'Active' ? 'Voting is Currently Live' : (election.status === 'Paused' ?
+                        'System Temporarily Paused' : 'System Offline') }}
+                    </p>
+                    <p class="text-xs text-slate-400 font-medium mt-1">Real-time status managed by global signals.</p>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="grid grid-cols-2 gap-4 mt-auto relative z-10">
+                <button (click)="updateStatus(election, 'Active')"
+                    [disabled]="election.status === 'Active' || election.status === 'Ended'"
+                    class="flex items-center justify-center space-x-2 py-4 bg-emerald-500 text-white font-black rounded-2xl shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition-all active:scale-95 disabled:opacity-30 disabled:pointer-events-none">
+                    <ion-icon name="play" class="text-lg"></ion-icon>
+                    <span>Start</span>
+                </button>
+                <button (click)="updateStatus(election, 'Paused')" [disabled]="election.status !== 'Active'"
+                    class="flex items-center justify-center space-x-2 py-4 bg-amber-500 text-white font-black rounded-2xl shadow-lg shadow-amber-500/20 hover:bg-amber-600 transition-all active:scale-95 disabled:opacity-30 disabled:pointer-events-none">
+                    <ion-icon name="pause" class="text-lg"></ion-icon>
+                    <span>Pause</span>
+                </button>
+                <button (click)="updateStatus(election, 'Ended')" [disabled]="election.status === 'Ended'"
+                    class="col-span-2 flex items-center justify-center space-x-2 py-4 bg-rose-500 text-white font-black rounded-2xl shadow-lg shadow-rose-500/20 hover:bg-rose-600 transition-all active:scale-95 disabled:opacity-30 disabled:pointer-events-none">
+                    <ion-icon name="stop" class="text-lg"></ion-icon>
+                    <span>End Voting Cycle</span>
+                </button>
+            </div>
+
+            <!-- Background Decoration -->
+            <div class="absolute -right-10 -top-10 h-40 w-40 bg-blue-500/5 rounded-full blur-3xl"></div>
+            <div class="absolute -left-10 -bottom-10 h-40 w-40 bg-indigo-500/5 rounded-full blur-3xl"></div>
+        </div>
+
+        <div *ngIf="elections().length === 0"
+            class="lg:col-span-2 bg-white rounded-[2rem] p-20 text-center border-2 border-dashed border-slate-100 flex flex-col items-center">
+            <ion-icon name="construct-outline" class="text-7xl text-slate-100 mb-4"></ion-icon>
+            <h4 class="text-2xl font-black text-slate-900 tracking-tight">No manageable systems</h4>
+            <p class="text-slate-400 font-medium max-w-sm mx-auto mt-2">You need to create at least one election to
+                unlock the power control panel.</p>
+            <button routerLink="/admin/elections/create"
+                class="mt-8 px-8 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-black transition-colors">Setup
+                First System</button>
+        </div>
+    </div>
+</div>

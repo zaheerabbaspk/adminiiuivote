@@ -1,0 +1,159 @@
+<div class="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-3xl font-black text-slate-900 tracking-tight">Voters</h2>
+            <p class="text-slate-500 font-medium">Manage voter registrations and access control.</p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button (click)="onBulkUpload()"
+                class="px-5 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm flex items-center space-x-2">
+                <ion-icon name="cloud-upload-outline" class="text-lg text-slate-400"></ion-icon>
+                <span>CSV Import</span>
+            </button>
+            <button (click)="isAddModalOpen = true"
+                class="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-500/25 hover:bg-blue-700 hover:-translate-y-0.5 transition-all active:scale-95">
+                <ion-icon name="add-outline" class="text-xl"></ion-icon>
+                <span>Add Voter</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-slate-50/50">
+                    <tr>
+                        <th
+                            class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                            Voter Details</th>
+                        <th
+                            class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                            Election</th>
+                        <th
+                            class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                            Status</th>
+                        <th
+                            class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 text-right">
+                            Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    <tr *ngFor="let voter of voters()" class="hover:bg-slate-50/30 transition-colors group">
+                        <td class="px-6 py-5">
+                            <div class="flex items-center space-x-3">
+                                <div
+                                    class="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 font-bold group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                                    {{ voter.name.substring(0, 2).toUpperCase() }}
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-800">{{ voter.name }}</p>
+                                    <p class="text-xs text-slate-400 mt-0.5 font-medium">{{ voter.email }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-5">
+                            <span
+                                class="text-xs font-bold text-slate-600 px-2.5 py-1 bg-slate-50 rounded-lg border border-slate-100">{{
+                                getElectionName(voter.electionId) }}</span>
+                        </td>
+                        <td class="px-6 py-5">
+                            <div class="flex items-center space-x-2">
+                                <span
+                                    [class]="voter.isActive ? 'text-emerald-500 bg-emerald-50' : 'text-slate-400 bg-slate-100'"
+                                    class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
+                                    {{ voter.isActive ? 'Active' : 'Disabled' }}
+                                </span>
+                                <span *ngIf="voter.hasVoted"
+                                    class="text-blue-500 bg-blue-50 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
+                                    Voted
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-5 text-right">
+                            <button (click)="toggleStatus(voter.id)"
+                                [class]="voter.isActive ? 'text-rose-500 hover:bg-rose-50' : 'text-emerald-500 hover:bg-emerald-50'"
+                                class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
+                                {{ voter.isActive ? 'Deactivate' : 'Activate' }}
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr *ngIf="voters().length === 0">
+                        <td colspan="4" class="px-6 py-20 text-center">
+                            <ion-icon name="people-circle-outline" class="text-6xl text-slate-100 mb-4"></ion-icon>
+                            <h4 class="text-lg font-bold text-slate-900">No voters registered</h4>
+                            <p class="text-sm text-slate-500 mt-1 max-w-xs mx-auto">Upload a CSV or add voters manually
+                                to populate the directory.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add Voter Modal -->
+    <ion-modal [isOpen]="isAddModalOpen" (didDismiss)="isAddModalOpen = false" class="voter-modal">
+        <ng-template>
+            <div class="flex flex-col h-full bg-white font-sans">
+                <div class="p-6 border-b border-slate-50 flex items-center justify-between">
+                    <h3 class="text-xl font-black text-slate-900 tracking-tight">Register Voter</h3>
+                    <button (click)="isAddModalOpen = false"
+                        class="p-2 text-slate-400 hover:text-slate-600 transition-colors">
+                        <ion-icon name="close-outline" class="text-2xl"></ion-icon>
+                    </button>
+                </div>
+
+                <form [formGroup]="voterForm" (ngSubmit)="saveVoter()"
+                    class="p-8 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full
+                            Name</label>
+                        <input type="text" formControlName="name"
+                            class="block w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-slate-900 font-bold focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
+                            placeholder="Enter voter full name">
+                        <p *ngIf="voterForm.get('name')?.touched && voterForm.get('name')?.errors?.['required']"
+                            class="text-[10px] font-bold text-rose-500 ml-1">Name is required.</p>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email
+                            Address</label>
+                        <input type="email" formControlName="email"
+                            class="block w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-slate-900 font-bold focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
+                            placeholder="voter@example.com">
+                        <p *ngIf="voterForm.get('email')?.touched && voterForm.get('email')?.errors?.['email']"
+                            class="text-[10px] font-bold text-rose-500 ml-1">Please enter a valid email.</p>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Assigned
+                            Election</label>
+                        <select formControlName="electionId"
+                            class="block w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-slate-900 font-bold focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all outline-none appearance-none cursor-pointer">
+                            <option value="" disabled selected>Select Election Reference</option>
+                            <option *ngFor="let election of elections()" [value]="election.id">{{ election.name }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="pt-8 bg-white sticky bottom-0 border-t border-slate-50">
+                        <button type="submit" [disabled]="voterForm.invalid"
+                            class="w-full py-4 bg-blue-600 text-white font-black rounded-2xl shadow-xl shadow-blue-500/30 hover:bg-blue-700 transition-all active:scale-95 disabled:opacity-50">
+                            Create Voter Access
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </ng-template>
+    </ion-modal>
+</div>
+
+<style>
+    .voter-modal {
+        --height: auto;
+        --max-height: 85vh;
+        --width: 100%;
+        --max-width: 450px;
+        --border-radius: 32px;
+    }
+</style>
