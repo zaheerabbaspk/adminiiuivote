@@ -18,7 +18,7 @@ export class VoterManagementPage {
     voters = this.votingService.voters;
     elections = this.votingService.elections;
 
-    isAddModalOpen = false;
+    isModalOpen = false;
 
     voterForm: FormGroup = this.fb.group({
         name: ['', [Validators.required]],
@@ -26,15 +26,15 @@ export class VoterManagementPage {
         electionId: ['', [Validators.required]]
     });
 
-    toggleStatus(id: string) {
+    toggleVoterStatus(id: string) {
         this.votingService.toggleVoterStatus(id);
     }
 
-    saveVoter() {
+    addVoter() {
         if (this.voterForm.valid) {
             this.votingService.addVoter(this.voterForm.value);
             this.voterForm.reset();
-            this.isAddModalOpen = false;
+            this.isModalOpen = false;
         }
     }
 
