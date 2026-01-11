@@ -111,6 +111,44 @@
                 <div class="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/20">
                     <form [formGroup]="candidateForm" id="candidateForm" (ngSubmit)="saveCandidate()"
                         class="p-8 space-y-6">
+                        <!-- Image Upload Box -->
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Profile
+                                Image</label>
+                            <div (click)="triggerFileInput()"
+                                class="relative group cursor-pointer border-2 border-dashed border-slate-200 rounded-3xl p-8 hover:border-indigo-500 hover:bg-indigo-50/30 transition-all flex flex-col items-center justify-center space-y-3 overflow-hidden">
+
+                                <input type="file" id="candidateImageInput" class="hidden"
+                                    (change)="onFileSelected($event)" accept="image/*">
+
+                                <div *ngIf="!candidateForm.value.imageUrl" class="flex flex-col items-center space-y-3">
+                                    <div
+                                        class="h-16 w-16 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:text-indigo-500 transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="2" stroke="currentColor" class="w-8 h-8">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M12 4.5v15m7.5-7.5h-15" />
+                                        </svg>
+                                    </div>
+                                    <div class="text-center">
+                                        <p class="text-sm font-black text-slate-900">Upload Image</p>
+                                        <p class="text-xs font-medium text-slate-400">Click to browse from device</p>
+                                    </div>
+                                </div>
+
+                                <div *ngIf="candidateForm.value.imageUrl"
+                                    class="relative w-full h-48 rounded-2xl overflow-hidden">
+                                    <img [src]="candidateForm.value.imageUrl" class="w-full h-full object-cover">
+                                    <div
+                                        class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <span
+                                            class="text-white text-xs font-black uppercase tracking-widest bg-black/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">Change
+                                            Image</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="space-y-2">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full
                                 Name</label>
@@ -165,14 +203,6 @@
                                 </svg>
                                 You must create an election first.
                             </p>
-                        </div>
-
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Profile
-                                Image URL (Optional)</label>
-                            <input type="text" formControlName="imageUrl"
-                                class="block w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl text-slate-900 font-bold focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
-                                placeholder="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix">
                         </div>
                     </form>
                 </div>

@@ -91,7 +91,8 @@ export class VotingService {
                 name: candidate.name,
                 position: candidate.position,
                 party: candidate.party,
-                electionId: candidate.electionId
+                electionId: candidate.electionId,
+                imageUrl: candidate.imageUrl
             }));
 
             // Reload candidates from server

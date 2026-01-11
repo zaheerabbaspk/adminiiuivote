@@ -29,6 +29,24 @@ export class CandidateManagementPage {
         imageUrl: ['']
     });
 
+    onFileSelected(event: any) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                this.candidateForm.patchValue({
+                    imageUrl: reader.result as string
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    triggerFileInput() {
+        const fileInput = document.getElementById('candidateImageInput') as HTMLInputElement;
+        fileInput?.click();
+    }
+
     openAddModal() {
         this.editingCandidateId.set(null);
         this.candidateForm.reset();
