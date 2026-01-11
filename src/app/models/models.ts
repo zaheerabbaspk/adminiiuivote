@@ -13,6 +13,7 @@ export interface Election {
 export interface Candidate {
     id: string;
     name: string;
+    position: string;
     party: string;
     electionId: string;
     votes: number;

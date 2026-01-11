@@ -18,7 +18,7 @@ export class ElectionCreatePage {
 
     electionForm: FormGroup = this.fb.group({
         name: ['', [Validators.required, Validators.minLength(3)]],
-        description: ['', [Validators.required]],
+        description: [''],
         startDate: ['', [Validators.required]],
         endDate: ['', [Validators.required]],
         status: ['Draft', [Validators.required]]
@@ -30,11 +30,19 @@ export class ElectionCreatePage {
         return start && end && new Date(start) < new Date(end) ? null : { dateError: true };
     }
 
-    onSubmit() {
+    async onSubmit() {
+        console.log('Submitting election form:', this.electionForm.value);
         if (this.electionForm.valid) {
-            this.votingService.addElection(this.electionForm.value);
-            this.router.navigate(['/admin/elections']);
+            try {
+                await this.votingService.addElection(this.electionForm.value);
+                console.log('Election added successfully, navigating...');
+                this.router.navigate(['/admin/elections']);
+            } catch (error) {
+                console.error('Submission failed:', error);
+                alert('Could not create election. Please check the backend.');
+            }
         } else {
+            console.warn('Form is invalid:', this.electionForm.errors);
             this.markFormGroupTouched(this.electionForm);
         }
     }

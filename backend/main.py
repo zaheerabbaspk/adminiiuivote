@@ -25,10 +25,10 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 def get_db_connection():
     try:
         conn = psycopg2.connect(
-            host=os.getenv("DB_HOST", "localhost"),
-            database=os.getenv("DB_NAME", "iiuivote"),
-            user=os.getenv("DB_USER", "postgres"),
-            password=os.getenv("DB_PASSWORD", "admin"),
+            host="127.0.0.1",
+            database="postgres",
+            user="postgres",
+            password="blove1234@",
             cursor_factory=RealDictCursor
         )
         return conn
@@ -53,6 +53,20 @@ class VoteRequest(BaseModel):
 class CandidateCreate(BaseModel):
     name: str
     position: str
+    party: str
+    electionId: str
+
+class ElectionCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    startDate: str
+    endDate: str
+    status: str
+
+class VoterCreate(BaseModel):
+    name: str
+    email: str
+    electionId: str
 
 # Initialize Database Schema
 @app.on_event("startup")
@@ -76,10 +90,35 @@ def startup_db():
                 id SERIAL PRIMARY KEY,
                 name TEXT NOT NULL,
                 position TEXT NOT NULL,
+                party TEXT,
+                election_id TEXT,
                 vote_count INTEGER DEFAULT 0
             );
         """)
-        # Create Votes table for record
+        # Create Elections table
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS elections (
+                id SERIAL PRIMARY KEY,
+                name TEXT NOT NULL,
+                description TEXT,
+                start_date TEXT,
+                end_date TEXT,
+                status TEXT DEFAULT 'Draft',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        """)
+        # Create Voters table
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS voters (
+                id SERIAL PRIMARY KEY,
+                name TEXT NOT NULL,
+                email TEXT UNIQUE NOT NULL,
+                has_voted BOOLEAN DEFAULT FALSE,
+                is_active BOOLEAN DEFAULT TRUE,
+                election_id TEXT
+            );
+        """)
+        # Create Votes table
         cur.execute("""
             CREATE TABLE IF NOT EXISTS votes (
                 id SERIAL PRIMARY KEY,
@@ -89,17 +128,6 @@ def startup_db():
             );
         """)
         
-        # Insert initial candidates if table is empty
-        cur.execute("SELECT COUNT(*) FROM candidates")
-        if cur.fetchone()['count'] == 0:
-            initial_candidates = [
-                ("Candidate A", "President"),
-                ("Candidate B", "Vice President"),
-                ("Candidate C", "General Secretary")
-            ]
-            for name, pos in initial_candidates:
-                cur.execute("INSERT INTO candidates (name, position) VALUES (%s, %s)", (name, pos))
-                
         conn.commit()
         cur.close()
         conn.close()
@@ -156,7 +184,18 @@ def get_candidates():
     candidates = cur.fetchall()
     cur.close()
     conn.close()
-    return candidates
+    
+    # Map to camelCase for frontend
+    return [
+        {
+            "id": c["id"],
+            "name": c["name"],
+            "position": c["position"],
+            "party": c.get("party", ""),
+            "electionId": c.get("election_id", ""),
+            "votes": c.get("vote_count", 0)
+        } for c in candidates
+    ]
 
 @app.post("/candidates")
 def create_candidate(candidate: CandidateCreate):
@@ -167,8 +206,8 @@ def create_candidate(candidate: CandidateCreate):
     cur = conn.cursor()
     try:
         cur.execute(
-            "INSERT INTO candidates (name, position) VALUES (%s, %s) RETURNING id",
-            (candidate.name, candidate.position)
+            "INSERT INTO candidates (name, position, party, election_id) VALUES (%s, %s, %s, %s) RETURNING id",
+            (candidate.name, candidate.position, candidate.party, candidate.electionId)
         )
         new_candidate = cur.fetchone()
         conn.commit()
@@ -176,6 +215,20 @@ def create_candidate(candidate: CandidateCreate):
     except Exception as e:
         conn.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cur.close()
+        conn.close()
+
+@app.delete("/candidates/{candidate_id}")
+def delete_candidate(candidate_id: int):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+    cur = conn.cursor()
+    try:
+        cur.execute("DELETE FROM candidates WHERE id = %s", (candidate_id,))
+        conn.commit()
+        return {"message": "Candidate deleted"}
     finally:
         cur.close()
         conn.close()
@@ -225,6 +278,87 @@ def get_results():
     cur.close()
     conn.close()
     return results
+
+# --- Election Endpoints ---
+@app.get("/elections")
+def get_elections():
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM elections")
+    elections = cur.fetchall()
+    cur.close()
+    conn.close()
+    return elections
+
+@app.post("/elections")
+def create_election(election: ElectionCreate):
+    print(f"Received election data: {election}")
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+    cur = conn.cursor()
+    try:
+        cur.execute(
+            "INSERT INTO elections (name, description, start_date, end_date, status) VALUES (%s, %s, %s, %s, %s) RETURNING id",
+            (election.name, election.description, election.startDate, election.endDate, election.status)
+        )
+        new_id = cur.fetchone()['id']
+        conn.commit()
+        print(f"Election created with ID: {new_id}")
+        return {"message": "Election created", "id": new_id}
+    except Exception as e:
+        print(f"Error creating election: {e}")
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cur.close()
+        conn.close()
+
+# --- Voter Endpoints ---
+@app.get("/voters")
+def get_voters():
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM voters")
+    voters = cur.fetchall()
+    cur.close()
+    conn.close()
+    
+    return [
+        {
+            "id": v["id"],
+            "name": v["name"],
+            "email": v["email"],
+            "hasVoted": v["has_voted"],
+            "isActive": v["is_active"],
+            "electionId": v.get("election_id", "")
+        } for v in voters
+    ]
+
+@app.post("/voters")
+def create_voter(voter: VoterCreate):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+    cur = conn.cursor()
+    try:
+        cur.execute(
+            "INSERT INTO voters (name, email, election_id) VALUES (%s, %s, %s) RETURNING id",
+            (voter.name, voter.email, voter.electionId)
+        )
+        new_id = cur.fetchone()['id']
+        conn.commit()
+        return {"message": "Voter created", "id": new_id}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+    finally:
+        cur.close()
+        conn.close()
 
 if __name__ == "__main__":
     import uvicorn

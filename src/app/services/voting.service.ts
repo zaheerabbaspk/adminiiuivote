@@ -1,14 +1,19 @@
-import { Injectable, signal, computed, effect } from '@angular/core';
-import { Election, Candidate, Voter, AuditLog, DashboardStats } from '../models/models';
+import { Injectable, signal, computed, effect, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Election, ElectionStatus, Candidate, Voter, AuditLog, DashboardStats } from '../models/models';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable({
     providedIn: 'root'
 })
 export class VotingService {
+    private http = inject(HttpClient);
+    private apiUrl = 'http://127.0.0.1:8000';
+
     // Signals for state
-    private electionsSignal = signal<Election[]>(this.loadFromStorage('elections', []));
-    private candidatesSignal = signal<Candidate[]>(this.loadFromStorage('candidates', []));
-    private votersSignal = signal<Voter[]>(this.loadFromStorage('voters', []));
+    private electionsSignal = signal<Election[]>([]);
+    private candidatesSignal = signal<Candidate[]>([]);
+    private votersSignal = signal<Voter[]>([]);
     private auditLogsSignal = signal<AuditLog[]>(this.loadFromStorage('auditLogs', []));
 
     // Public readonly signals
@@ -26,25 +31,53 @@ export class VotingService {
     }));
 
     constructor() {
-        // Persist to localStorage whenever signals change
-        effect(() => localStorage.setItem('elections', JSON.stringify(this.electionsSignal())));
-        effect(() => localStorage.setItem('candidates', JSON.stringify(this.candidatesSignal())));
-        effect(() => localStorage.setItem('voters', JSON.stringify(this.votersSignal())));
+        this.loadInitialData();
         effect(() => localStorage.setItem('auditLogs', JSON.stringify(this.auditLogsSignal())));
     }
 
+    private async loadInitialData() {
+        try {
+            console.log('Fetching data from API...');
+
+            // Load Candidates
+            const candidateData: any[] = await firstValueFrom(this.http.get<any[]>(`${this.apiUrl}/candidates`));
+            console.log('Candidates fetched:', candidateData);
+            this.candidatesSignal.set(candidateData);
+
+            // Load Elections
+            const electionData: any[] = await firstValueFrom(this.http.get<any[]>(`${this.apiUrl}/elections`));
+            console.log('Elections fetched:', electionData);
+            this.electionsSignal.set(electionData);
+
+            // Load Voters
+            const voterData: any[] = await firstValueFrom(this.http.get<any[]>(`${this.apiUrl}/voters`));
+            console.log('Voters fetched:', voterData);
+            this.votersSignal.set(voterData);
+
+        } catch (error) {
+            console.error('Error loading initial data:', error);
+        }
+    }
+
     // --- Election Actions ---
-    addElection(election: Omit<Election, 'id' | 'createdAt'>) {
-        const newElection: Election = {
-            ...election,
-            id: crypto.randomUUID(),
-            createdAt: new Date().toISOString()
-        };
-        this.electionsSignal.update(list => [...list, newElection]);
-        this.addAuditLog('Admin', 'CREATE', 'Election', `Created election: ${newElection.name}`);
+    async addElection(election: Omit<Election, 'id' | 'createdAt'>) {
+        try {
+            await firstValueFrom(this.http.post(`${this.apiUrl}/elections`, {
+                name: election.name,
+                description: election.description,
+                startDate: election.startDate,
+                endDate: election.endDate,
+                status: election.status
+            }));
+            await this.loadInitialData();
+            this.addAuditLog('Admin', 'CREATE', 'Election', `Created election: ${election.name}`);
+        } catch (error) {
+            console.error('Error adding election:', error);
+        }
     }
 
     updateElectionStatus(id: string, status: Election['status']) {
+        // Keeping status update local for now or can add a PUT endpoint if needed
         this.electionsSignal.update(list =>
             list.map(e => e.id === id ? { ...e, status } : e)
         );
@@ -52,31 +85,47 @@ export class VotingService {
     }
 
     // --- Candidate Actions ---
-    addCandidate(candidate: Omit<Candidate, 'id' | 'votes'>) {
-        const newCandidate: Candidate = {
-            ...candidate,
-            id: crypto.randomUUID(),
-            votes: 0
-        };
-        this.candidatesSignal.update(list => [...list, newCandidate]);
-        this.addAuditLog('Admin', 'CREATE', 'Candidate', `Added candidate: ${newCandidate.name}`);
+    async addCandidate(candidate: Omit<Candidate, 'id' | 'votes'>) {
+        try {
+            await firstValueFrom(this.http.post(`${this.apiUrl}/candidates`, {
+                name: candidate.name,
+                position: candidate.position,
+                party: candidate.party,
+                electionId: candidate.electionId
+            }));
+
+            // Reload candidates from server
+            await this.loadInitialData();
+
+            this.addAuditLog('Admin', 'CREATE', 'Candidate', `Added candidate: ${candidate.name}`);
+        } catch (error) {
+            console.error('Error adding candidate:', error);
+        }
     }
 
-    deleteCandidate(id: string) {
-        this.candidatesSignal.update(list => list.filter(c => c.id !== id));
-        this.addAuditLog('Admin', 'DELETE', 'Candidate', `Deleted candidate with ID: ${id}`);
+    async deleteCandidate(id: string) {
+        try {
+            await firstValueFrom(this.http.delete(`${this.apiUrl}/candidates/${id}`));
+            await this.loadInitialData();
+            this.addAuditLog('Admin', 'DELETE', 'Candidate', `Deleted candidate with ID: ${id}`);
+        } catch (error) {
+            console.error('Error deleting candidate:', error);
+        }
     }
 
     // --- Voter Actions ---
-    addVoter(voter: Omit<Voter, 'id' | 'hasVoted' | 'isActive'>) {
-        const newVoter: Voter = {
-            ...voter,
-            id: crypto.randomUUID(),
-            hasVoted: false,
-            isActive: true
-        };
-        this.votersSignal.update(list => [...list, newVoter]);
-        this.addAuditLog('Admin', 'CREATE', 'Voter', `Added voter: ${newVoter.name}`);
+    async addVoter(voter: Omit<Voter, 'id' | 'hasVoted' | 'isActive'>) {
+        try {
+            await firstValueFrom(this.http.post(`${this.apiUrl}/voters`, {
+                name: voter.name,
+                email: voter.email,
+                electionId: voter.electionId
+            }));
+            await this.loadInitialData();
+            this.addAuditLog('Admin', 'CREATE', 'Voter', `Added voter: ${voter.name}`);
+        } catch (error) {
+            console.error('Error adding voter:', error);
+        }
     }
 
     toggleVoterStatus(id: string) {

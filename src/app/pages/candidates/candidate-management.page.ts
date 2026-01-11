@@ -23,6 +23,7 @@ export class CandidateManagementPage {
 
     candidateForm: FormGroup = this.fb.group({
         name: ['', [Validators.required]],
+        position: ['', [Validators.required]],
         party: ['', [Validators.required]],
         electionId: ['', [Validators.required]],
         imageUrl: ['']
