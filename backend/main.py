@@ -297,6 +297,14 @@ def get_results():
     conn.close()
     return results
 
+
+class ElectionUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    startDate: Optional[str] = None
+    endDate: Optional[str] = None
+    status: Optional[str] = None
+
 # --- Election Endpoints ---
 @app.get("/elections")
 def get_elections():
@@ -304,11 +312,23 @@ def get_elections():
     if not conn:
         raise HTTPException(status_code=500, detail="Database connection failed")
     cur = conn.cursor()
-    cur.execute("SELECT * FROM elections")
+    cur.execute("SELECT * FROM elections ORDER BY created_at DESC")
     elections = cur.fetchall()
     cur.close()
     conn.close()
-    return elections
+    
+    return [
+        {
+            "id": str(e["id"]),
+            "name": e["name"],
+            "description": e["description"],
+            "startDate": e["start_date"],
+            "endDate": e["end_date"],
+            "status": e["status"],
+            "createdAt": str(e["created_at"])
+        }
+        for e in elections
+    ]
 
 @app.post("/elections")
 def create_election(election: ElectionCreate):
@@ -328,6 +348,53 @@ def create_election(election: ElectionCreate):
         return {"message": "Election created", "id": new_id}
     except Exception as e:
         print(f"Error creating election: {e}")
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cur.close()
+        conn.close()
+
+@app.put("/elections/{election_id}")
+def update_election(election_id: int, election: ElectionUpdate):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+    cur = conn.cursor()
+    try:
+        # Build update query dynamically based on provided fields
+        update_fields = []
+        params = []
+        
+        if election.name is not None:
+            update_fields.append("name = %s")
+            params.append(election.name)
+        if election.description is not None:
+            update_fields.append("description = %s")
+            params.append(election.description)
+        if election.startDate is not None:
+            update_fields.append("start_date = %s")
+            params.append(election.startDate)
+        if election.endDate is not None:
+            update_fields.append("end_date = %s")
+            params.append(election.endDate)
+        if election.status is not None:
+            update_fields.append("status = %s")
+            params.append(election.status)
+            
+        if not update_fields:
+            raise HTTPException(status_code=400, detail="No fields to update")
+            
+        query = f"UPDATE elections SET {', '.join(update_fields)} WHERE id = %s"
+        params.append(election_id)
+        
+        cur.execute(query, tuple(params))
+        conn.commit()
+        
+        if cur.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Election not found")
+            
+        return {"message": "Election updated successfully"}
+    except Exception as e:
         conn.rollback()
         raise HTTPException(status_code=500, detail=str(e))
     finally:
