@@ -4,12 +4,13 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { IonicModule, ModalController } from '@ionic/angular';
 import { VotingService } from '../../services/voting.service';
 import { Candidate, Election } from '../../models/models';
+import { SafeUrlPipe } from '../../pipes/safe-url.pipe';
 
 @Component({
     selector: 'app-candidate-management',
     templateUrl: './candidate-management.page.html',
     standalone: true,
-    imports: [CommonModule, IonicModule, ReactiveFormsModule]
+    imports: [CommonModule, IonicModule, ReactiveFormsModule, SafeUrlPipe]
 })
 export class CandidateManagementPage {
     private votingService = inject(VotingService);
@@ -59,11 +60,23 @@ export class CandidateManagementPage {
         }
     }
 
-    saveCandidate() {
+    async saveCandidate() {
         if (this.candidateForm.valid) {
             const formValue = this.candidateForm.value;
-            this.votingService.addCandidate(formValue);
-            this.isModalOpen = false;
+            console.log('Form Submit - Data Lengths:', {
+                name: formValue.name.length,
+                imageUrl: formValue.imageUrl ? formValue.imageUrl.length : 0
+            });
+
+            try {
+                await this.votingService.addCandidate(formValue);
+                this.isModalOpen = false;
+            } catch (error) {
+                console.error('Failed to save candidate:', error);
+                alert('Error saving candidate. check console.');
+            }
+        } else {
+            console.warn('Candidate form is invalid:', this.candidateForm.errors);
         }
     }
 

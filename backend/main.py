@@ -6,6 +6,9 @@ from psycopg2.extras import RealDictCursor
 from passlib.context import CryptContext
 from typing import List, Optional
 import os
+print("-" * 50)
+print(f"STAGING SERVER STARTING FROM: {os.path.abspath(__file__)}")
+print("-" * 50)
 
 app = FastAPI(title="Voting App API")
 
@@ -55,6 +58,7 @@ class CandidateCreate(BaseModel):
     position: str
     party: str
     electionId: str
+    imageUrl: Optional[str] = None
 
 class ElectionCreate(BaseModel):
     name: str
@@ -92,9 +96,12 @@ def startup_db():
                 position TEXT NOT NULL,
                 party TEXT,
                 election_id TEXT,
+                image_url TEXT,
                 vote_count INTEGER DEFAULT 0
             );
         """)
+        # Specific check to add image_url to existing tables if missing
+        cur.execute("ALTER TABLE candidates ADD COLUMN IF NOT EXISTS image_url TEXT;")
         # Create Elections table
         cur.execute("""
             CREATE TABLE IF NOT EXISTS elections (
@@ -185,17 +192,22 @@ def get_candidates():
     cur.close()
     conn.close()
     
-    # Map to camelCase for frontend
-    return [
-        {
-            "id": c["id"],
+    print(f"Total candidates found: {len(candidates)}")
+    results = []
+    for c in candidates:
+        has_img = bool(c.get("image_url"))
+        print(f"Candidate: {c['name']} | Has Image: {has_img}")
+        
+        results.append({
+            "id": str(c["id"]),
             "name": c["name"],
             "position": c["position"],
-            "party": c.get("party", ""),
-            "electionId": c.get("election_id", ""),
-            "votes": c.get("vote_count", 0)
-        } for c in candidates
-    ]
+            "party": c["party"] or "",
+            "electionId": str(c["election_id"]) if c["election_id"] else "",
+            "imageUrl": c["image_url"] or "",
+            "votes": c["vote_count"] or 0
+        })
+    return results
 
 @app.post("/candidates")
 def create_candidate(candidate: CandidateCreate):
@@ -204,13 +216,19 @@ def create_candidate(candidate: CandidateCreate):
         raise HTTPException(status_code=500, detail="Database connection failed")
     
     cur = conn.cursor()
+    print(f"Adding candidate: {candidate.name}")
+    print(f"Image received: {'Yes' if candidate.imageUrl else 'No'}")
+    if candidate.imageUrl:
+        print(f"Image data starts with: {candidate.imageUrl[:50]}...")
+    
     try:
         cur.execute(
-            "INSERT INTO candidates (name, position, party, election_id) VALUES (%s, %s, %s, %s) RETURNING id",
-            (candidate.name, candidate.position, candidate.party, candidate.electionId)
+            "INSERT INTO candidates (name, position, party, election_id, image_url) VALUES (%s, %s, %s, %s, %s) RETURNING id",
+            (candidate.name, candidate.position, candidate.party, candidate.electionId, candidate.imageUrl)
         )
         new_candidate = cur.fetchone()
         conn.commit()
+        print(f"Candidate added with ID: {new_candidate['id']}")
         return {"message": "Candidate added successfully", "candidate_id": new_candidate['id']}
     except Exception as e:
         conn.rollback()
@@ -335,7 +353,7 @@ def get_voters():
             "email": v["email"],
             "hasVoted": v["has_voted"],
             "isActive": v["is_active"],
-            "electionId": v.get("election_id", "")
+            "electionId": str(v["election_id"]) if v["election_id"] else ""
         } for v in voters
     ]
 

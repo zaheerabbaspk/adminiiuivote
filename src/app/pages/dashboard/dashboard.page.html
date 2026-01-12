@@ -15,7 +15,7 @@
                 </svg>
                 <span>Export Report</span>
             </button>
-            <button
+            <button (click)="votingService.refreshData()"
                 class="px-4 py-2 bg-blue-600 rounded-lg text-sm font-bold text-white hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20 active:scale-95">
                 Refresh Data
             </button>

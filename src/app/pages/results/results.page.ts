@@ -3,15 +3,16 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { VotingService } from '../../services/voting.service';
 import { Election, Candidate } from '../../models/models';
+import { SafeUrlPipe } from '../../pipes/safe-url.pipe';
 
 @Component({
     selector: 'app-results',
     templateUrl: './results.page.html',
     standalone: true,
-    imports: [CommonModule, IonicModule]
+    imports: [CommonModule, IonicModule, SafeUrlPipe]
 })
 export class ResultsPage {
-    private votingService = inject(VotingService);
+    public votingService = inject(VotingService);
 
     elections = this.votingService.elections;
     candidates = this.votingService.candidates;

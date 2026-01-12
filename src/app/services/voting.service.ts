@@ -31,8 +31,12 @@ export class VotingService {
     }));
 
     constructor() {
-        this.loadInitialData();
+        this.refreshData();
         effect(() => localStorage.setItem('auditLogs', JSON.stringify(this.auditLogsSignal())));
+    }
+
+    async refreshData() {
+        await this.loadInitialData();
     }
 
     private async loadInitialData() {
@@ -41,12 +45,20 @@ export class VotingService {
 
             // Load Candidates
             const candidateData: any[] = await firstValueFrom(this.http.get<any[]>(`${this.apiUrl}/candidates`));
-            console.log('Candidates fetched:', candidateData);
-            this.candidatesSignal.set(candidateData);
+            console.log(`Loaded ${candidateData.length} candidates from API`);
+
+            this.candidatesSignal.set(candidateData.map(c => ({
+                id: String(c.id),
+                name: c.name,
+                position: c.position,
+                party: c.party || '',
+                electionId: String(c.electionId || ''),
+                votes: Number(c.votes || 0),
+                imageUrl: c.imageUrl || ''
+            })));
 
             // Load Elections
             const electionData: any[] = await firstValueFrom(this.http.get<any[]>(`${this.apiUrl}/elections`));
-            console.log('Elections fetched:', electionData);
             this.electionsSignal.set(electionData);
 
             // Load Voters
@@ -86,14 +98,12 @@ export class VotingService {
 
     // --- Candidate Actions ---
     async addCandidate(candidate: Omit<Candidate, 'id' | 'votes'>) {
+        console.log('API Call: addCandidate', {
+            ...candidate,
+            imageUrl: candidate.imageUrl ? `Length: ${candidate.imageUrl.length}` : 'NONE'
+        });
         try {
-            await firstValueFrom(this.http.post(`${this.apiUrl}/candidates`, {
-                name: candidate.name,
-                position: candidate.position,
-                party: candidate.party,
-                electionId: candidate.electionId,
-                imageUrl: candidate.imageUrl
-            }));
+            await firstValueFrom(this.http.post(`${this.apiUrl}/candidates`, candidate));
 
             // Reload candidates from server
             await this.loadInitialData();
