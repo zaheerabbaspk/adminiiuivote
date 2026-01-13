@@ -18,5 +18,6 @@ export class SidebarComponent {
         { label: 'Voting Control', icon: 'settings-outline', route: '/admin/voting-control' },
         { label: 'Results', icon: 'stats-chart-outline', route: '/admin/results' },
         { label: 'Audit Logs', icon: 'journal-outline', route: '/admin/audit-logs' },
+        { label: 'Access Tokens', icon: 'key-outline', route: '/admin/tokens' },
     ];
 }
