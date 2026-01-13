@@ -40,11 +40,19 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/audit-log/audit-log.page').then(m => m.AuditLogPage)
       },
       {
+        path: 'tokens',
+        loadComponent: () => import('./pages/tokens/tokens.page').then(m => m.TokensPage)
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'
       }
     ]
+  },
+  {
+    path: 'voting-ui',
+    loadComponent: () => import('./pages/voting-ui/voting-ui.page').then(m => m.VotingUiPage)
   },
   {
     path: '',

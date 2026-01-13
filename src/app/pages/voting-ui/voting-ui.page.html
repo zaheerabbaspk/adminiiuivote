@@ -1,0 +1,193 @@
+<ion-content class="bg-slate-900 text-white">
+    <div class="min-h-full flex flex-col items-center justify-center p-6 space-y-8">
+
+        <!-- Step 1: Token Entry -->
+        <div *ngIf="step === 'entry'"
+            class="w-full max-w-md bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 shadow-2xl animate-in fade-in zoom-in duration-500">
+            <div class="text-center space-y-4 mb-8">
+                <div
+                    class="h-20 w-20 bg-blue-600 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-blue-500/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                        stroke="currentColor" class="w-10 h-10">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21a3.745 3.745 0 0 1-3.068-.932 3.745 3.745 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.745 3.745 0 0 1 3.296-1.043A3.745 3.745 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.745 3.745 0 0 1 3.296 1.043 3.745 3.745 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-bold tracking-tight">Vote Securely</h1>
+                <p class="text-slate-400">Enter your 6-digit access token to proceed.</p>
+            </div>
+
+            <div class="space-y-6">
+                <div class="relative">
+                    <input type="text" maxlength="6" [(ngModel)]="voterToken" (input)="verifyToken()"
+                        class="w-full bg-slate-900/50 border-2 border-slate-700 rounded-2xl px-6 py-5 text-center text-4xl font-mono font-bold tracking-[0.5em] focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none text-white"
+                        placeholder="000000">
+                    <div class="absolute inset-y-0 right-6 flex items-center">
+                        <svg *ngIf="voterToken.length === 6" class="w-8 h-8 text-emerald-500 animate-in zoom-in"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                </div>
+
+                <button (click)="verifyToken()" [disabled]="voterToken.length !== 6"
+                    class="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-5 rounded-2xl shadow-xl shadow-blue-500/20 transition-all transform active:scale-[0.98]">
+                    Continue to Voting
+                </button>
+            </div>
+
+            <p class="mt-8 text-center text-xs text-slate-500">
+                This token is for one-time use and grants access to specific elections.
+            </p>
+        </div>
+
+        <!-- Step 2: Multi-Election Overview -->
+        <div *ngIf="step === 'elections'"
+            class="w-full max-w-2xl space-y-8 animate-in slide-in-from-bottom-8 duration-500">
+            <div class="text-center space-y-2">
+                <h2 class="text-4xl font-black">Elections for You</h2>
+                <p class="text-slate-400">You are eligible to vote in the following categories.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div *ngFor="let election of elections"
+                    class="bg-slate-800 border border-slate-700 rounded-3xl p-6 flex items-center justify-between group hover:bg-slate-700/50 transition-all cursor-pointer">
+                    <div class="flex items-center space-x-4">
+                        <div
+                            class="h-12 w-12 bg-blue-600/10 rounded-2xl flex items-center justify-center text-blue-500 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                stroke="currentColor" class="w-6 h-6">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0a5.995 5.995 0 0 0-4.058-2.932m0 0a3 3 0 1 0-3.938 3.503m2.107-4.561a5.96 5.96 0 0 1 4.058 2.932m-6.165 4.56a5.972 5.972 0 0 1-1.428-3.197m0 0a5.995 5.995 0 0 1 4.058-2.932m0 0a3.375 3.375 0 1 1-2.932 4.058l-.001-.005" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg">{{ election.title }}</h3>
+                            <p class="text-xs text-slate-500">{{ election.candidates.length }} Candidates Available</p>
+                        </div>
+                    </div>
+                    <div *ngIf="election.voted" class="flex items-center text-emerald-500 font-bold text-sm">
+                        <span>Voted</span>
+                        <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <button (click)="startVoting()"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-6 rounded-3xl shadow-2xl shadow-blue-500/20 text-xl transition-all hover:scale-[1.02] active:scale-[0.98]">
+                Start My Voting Session
+            </button>
+        </div>
+
+        <!-- Step 3: Candidate Selection -->
+        <div *ngIf="step === 'voting'" class="w-full max-w-4xl space-y-8 animate-in slide-in-from-right-8 duration-500">
+
+            <div class="flex items-center justify-between">
+                <div class="space-y-1">
+                    <p class="text-blue-500 font-bold text-sm uppercase tracking-widest">Election {{ activeElectionIndex
+                        + 1 }} of {{ elections.length }}</p>
+                    <h2 class="text-4xl font-black">{{ currentElection.title }}</h2>
+                </div>
+                <div class="flex space-x-1">
+                    <div *ngFor="let e of elections; let i = index"
+                        class="h-2 w-12 rounded-full transition-all duration-500"
+                        [class.bg-blue-600]="i === activeElectionIndex" [class.bg-emerald-500]="i < activeElectionIndex"
+                        [class.bg-slate-700]="i > activeElectionIndex">
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div *ngFor="let candidate of currentElection.candidates" (click)="selectCandidate(candidate.id)"
+                    class="relative bg-slate-800 border-2 rounded-[2.5rem] p-8 cursor-pointer transition-all duration-300 transform hover:scale-[1.02] group"
+                    [class.border-blue-600]="currentElection.selectedCandidateId === candidate.id"
+                    [class.border-slate-700]="currentElection.selectedCandidateId !== candidate.id"
+                    [class.ring-4]="currentElection.selectedCandidateId === candidate.id"
+                    [class.ring-blue-600/20]="currentElection.selectedCandidateId === candidate.id">
+
+                    <div class="flex flex-col items-center text-center space-y-6">
+                        <div class="relative">
+                            <div class="h-32 w-32 bg-slate-700 rounded-full border-4 border-slate-600 overflow-hidden">
+                                <img *ngIf="candidate.image" [src]="candidate.image" class="h-full w-full object-cover">
+                                <div *ngIf="!candidate.image"
+                                    class="h-full w-full flex items-center justify-center text-slate-500">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1" stroke="currentColor" class="w-16 h-16">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div *ngIf="currentElection.selectedCandidateId === candidate.id"
+                                class="absolute -top-2 -right-2 h-10 w-10 bg-blue-600 rounded-full border-4 border-slate-800 flex items-center justify-center animate-in zoom-in duration-300 shadow-lg">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    stroke-width="3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="text-2xl font-black group-hover:text-blue-400 transition-colors">{{
+                                candidate.name }}</h3>
+                            <p class="text-slate-400 font-medium uppercase tracking-widest text-sm mt-1">{{
+                                candidate.party }}</p>
+                        </div>
+
+                        <div
+                            class="w-full bg-slate-900/50 rounded-2xl py-4 group-hover:bg-blue-600/10 transition-colors">
+                            <span class="text-sm font-bold"
+                                [class.text-blue-500]="currentElection.selectedCandidateId === candidate.id"
+                                [class.text-slate-500]="currentElection.selectedCandidateId !== candidate.id">
+                                {{ currentElection.selectedCandidateId === candidate.id ? 'Selected' : 'Select
+                                Candidate' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-8 flex justify-end">
+                <button (click)="nextElection()" [disabled]="!currentElection.selectedCandidateId"
+                    class="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-12 py-5 rounded-2xl font-black text-lg flex items-center space-x-3 shadow-xl shadow-blue-500/20 transition-all hover:translate-x-1">
+                    <span>{{ activeElectionIndex === elections.length - 1 ? 'Cast My Votes' : 'Confirm Choice' }}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
+                        stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 4: Success Screen -->
+        <div *ngIf="step === 'success'" class="text-center space-y-8 animate-in zoom-in duration-700">
+            <div class="relative">
+                <div
+                    class="h-32 w-32 bg-emerald-500 rounded-full mx-auto flex items-center justify-center shadow-2xl shadow-emerald-500/40 relative z-10">
+                    <svg class="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <!-- Confetti-like decoration -->
+                <div class="absolute inset-0 bg-emerald-500/20 blur-3xl rounded-full scale-150"></div>
+            </div>
+
+            <div class="space-y-4">
+                <h2 class="text-5xl font-black">All Done!</h2>
+                <p class="text-slate-400 text-xl max-w-md mx-auto">Your votes have been securely recorded. Thank you for
+                    participating in the IIUI E-Vote system.</p>
+            </div>
+
+            <div class="pt-8">
+                <button (click)="step = 'entry'; voterToken = ''"
+                    class="bg-slate-800 hover:bg-slate-700 text-white px-12 py-5 rounded-2xl font-bold transition-all border border-slate-700">
+                    Logout Session
+                </button>
+            </div>
+        </div>
+
+    </div>
+</ion-content>
