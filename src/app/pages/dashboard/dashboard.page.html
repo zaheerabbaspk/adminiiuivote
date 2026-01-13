@@ -1,4 +1,9 @@
-<div class="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+<div *ngIf="!initialized()" class="h-[70vh] flex flex-col items-center justify-center space-y-4">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+    <p class="text-slate-500 font-bold animate-pulse">Initializing System...</p>
+</div>
+
+<div *ngIf="initialized()" class="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
     <!-- Welcome Section -->
     <div class="flex items-center justify-between">
         <div>
@@ -19,6 +24,20 @@
                 class="px-4 py-2 bg-blue-600 rounded-lg text-sm font-bold text-white hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20 active:scale-95">
                 Refresh Data
             </button>
+        </div>
+    </div>
+
+    <!-- Error Banner -->
+    <div *ngIf="error()"
+        class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+            class="w-6 h-6 shrink-0">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+        </svg>
+        <div>
+            <p class="font-bold">Connection Error</p>
+            <p class="text-sm">{{ error() }}</p>
         </div>
     </div>
 
@@ -199,4 +218,5 @@
             </div>
         </div>
     </div>
-</div>
+</div>< / d i v >  
+ 

@@ -1,5 +1,7 @@
+
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { VotingService } from '../../services/voting.service';
 
@@ -7,10 +9,14 @@ import { VotingService } from '../../services/voting.service';
     selector: 'app-dashboard',
     templateUrl: './dashboard.page.html',
     standalone: true,
-    imports: [CommonModule, IonicModule]
+    imports: [CommonModule, IonicModule, RouterLink]
 })
 export class DashboardPage {
-    votingService = inject(VotingService);
-    stats = this.votingService.stats;
-    recentLogs = this.votingService.auditLogs;
+    public votingService = inject(VotingService);
+
+    // Explicit signal aliases to help compiler if needed
+    public stats = this.votingService.stats;
+    public recentLogs = this.votingService.auditLogs;
+    public error = this.votingService.error;
+    public initialized = this.votingService.initialized;
 }

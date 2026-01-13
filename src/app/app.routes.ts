@@ -1,3 +1,4 @@
+
 import { Routes } from '@angular/router';
 import { AdminLayoutComponent } from './components/admin-layout/admin-layout.component';
 
@@ -50,4 +51,8 @@ export const routes: Routes = [
     redirectTo: 'admin/dashboard',
     pathMatch: 'full',
   },
+  {
+    path: '**',
+    redirectTo: 'admin/dashboard'
+  }
 ];
