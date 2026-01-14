@@ -87,7 +87,7 @@
     </nav>
 
     <div class="p-6 border-t border-slate-800 bg-slate-900/50">
-        <button
+        <button (click)="authService.logout()"
             class="flex items-center space-x-3 text-slate-400 hover:text-rose-400 transition-colors w-full px-4 py-2 rounded-lg hover:bg-rose-400/5 group text-sm font-medium">
             <!-- Logout Icon -->
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"

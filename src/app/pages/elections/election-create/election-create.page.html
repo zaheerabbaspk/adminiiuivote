@@ -2,8 +2,10 @@
     <!-- Header -->
     <div class="mb-8 flex items-center justify-between">
         <div>
-            <h2 class="text-3xl font-black text-slate-900 tracking-tight">Create Election</h2>
-            <p class="text-slate-500 font-medium">Configure a new voting cycle for the system.</p>
+            <h2 class="text-3xl font-black text-slate-900 tracking-tight">{{ isEditMode ? 'Edit Election' : 'Create
+                Election' }}</h2>
+            <p class="text-slate-500 font-medium">{{ isEditMode ? 'Update election details and settings.' : 'Configure a
+                new voting cycle for the system.' }}</p>
         </div>
         <button routerLink="/admin/elections" class="p-2 text-slate-400 hover:text-slate-600 transition-colors">
             <!-- close icon -->
@@ -45,6 +47,43 @@
                     <textarea formControlName="description" rows="4"
                         placeholder="Provide context about this election..."
                         class="block w-full px-5 py-4 bg-slate-50 border border-transparent rounded-2xl text-slate-900 font-medium placeholder:text-slate-300 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none resize-none"></textarea>
+                </div>
+
+                <!-- Positions Section -->
+                <div class="space-y-2">
+                    <label class="text-sm font-black text-slate-700 uppercase tracking-widest ml-1">Election
+                        Positions</label>
+                    <div class="py-4 px-6 bg-slate-50 rounded-3xl border border-slate-100/50 space-y-3">
+                        <div class="flex space-x-2">
+                            <input type="text" [(ngModel)]="newPositionInput" [ngModelOptions]="{standalone: true}"
+                                (keyup.enter)="addPosition()" placeholder="Add position (e.g. President)"
+                                class="flex-1 px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 font-bold placeholder:text-slate-300 focus:border-blue-500 transition-all outline-none text-sm">
+                            <button type="button" (click)="addPosition()"
+                                class="px-4 py-2 bg-blue-600 text-white text-xs font-black rounded-xl hover:bg-blue-700 transition-all active:scale-95 shrink-0 uppercase tracking-widest">
+                                Add
+                            </button>
+                        </div>
+
+                        <!-- Positions Tags -->
+                        <div *ngIf="positions.length > 0" class="flex flex-wrap gap-2">
+                            <div *ngFor="let position of positions"
+                                class="flex items-center space-x-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 shadow-sm group hover:border-blue-500 transition-all">
+                                <span>{{ position }}</span>
+                                <button type="button" (click)="removePosition(position)"
+                                    class="text-slate-300 hover:text-rose-500 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div *ngIf="positions.length === 0" class="text-center py-2">
+                            <p class="text-xs font-bold text-slate-400">No positions added yet. These define the roles
+                                for candidates.</p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Dates Grid -->
@@ -100,7 +139,7 @@
                         </button>
                         <button type="submit"
                             class="flex-1 sm:flex-none px-10 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:-translate-y-1 active:scale-95 transition-all">
-                            Launch Cycle
+                            {{ isEditMode ? 'Update Election' : 'Launch Cycle' }}
                         </button>
                     </div>
                 </div>

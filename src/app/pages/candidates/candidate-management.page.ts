@@ -19,6 +19,9 @@ export class CandidateManagementPage {
     candidates = this.votingService.candidates;
     elections = this.votingService.elections;
 
+    // Available positions based on selected election
+    availablePositions = signal<string[]>([]);
+
     isModalOpen = false;
     editingCandidateId = signal<string | null>(null);
 
@@ -29,6 +32,24 @@ export class CandidateManagementPage {
         electionId: ['', [Validators.required]],
         imageUrl: ['']
     });
+
+    constructor() {
+        // Watch for election selection changes
+        this.candidateForm.get('electionId')?.valueChanges.subscribe(async (electionId) => {
+            if (electionId) {
+                await this.loadPositionsForElection(electionId);
+                // Reset position selection when election changes
+                this.candidateForm.patchValue({ position: '' });
+            } else {
+                this.availablePositions.set([]);
+            }
+        });
+    }
+
+    async loadPositionsForElection(electionId: string) {
+        const positions = await this.votingService.getElectionPositions(electionId);
+        this.availablePositions.set(positions);
+    }
 
     onFileSelected(event: any) {
         const file = event.target.files[0];
@@ -51,6 +72,7 @@ export class CandidateManagementPage {
     openAddModal() {
         this.editingCandidateId.set(null);
         this.candidateForm.reset();
+        this.availablePositions.set([]);
         this.isModalOpen = true;
     }
 

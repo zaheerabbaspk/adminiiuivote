@@ -160,22 +160,6 @@
                         </div>
 
                         <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Position
-                                / Office</label>
-                            <input type="text" formControlName="position"
-                                class="block w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl text-slate-900 font-bold focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
-                                placeholder="e.g. President, Secretary">
-                        </div>
-
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Party /
-                                Affiliation</label>
-                            <input type="text" formControlName="party"
-                                class="block w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl text-slate-900 font-bold focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
-                                placeholder="e.g. Progressive Party">
-                        </div>
-
-                        <div class="space-y-2">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Assigned
                                 Election</label>
                             <div class="relative">
@@ -205,6 +189,46 @@
                                 </svg>
                                 You must create an election first.
                             </p>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Position
+                                / Office</label>
+                            <div class="relative">
+                                <select formControlName="position"
+                                    [disabled]="!candidateForm.value.electionId || availablePositions().length === 0"
+                                    class="block w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl text-slate-900 font-bold focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <option value="" disabled selected>Select a position...</option>
+                                    <option *ngFor="let position of availablePositions()" [value]="position">{{ position
+                                        }}</option>
+                                </select>
+                                <div
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <p *ngIf="candidateForm.value.electionId && availablePositions().length === 0"
+                                class="text-[10px] font-bold text-amber-600 bg-amber-50 p-3 rounded-xl border border-amber-100 mt-2 flex items-center">
+                                <!-- warning icon -->
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                    stroke="currentColor" class="w-4 h-4 mr-2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                                </svg>
+                                No positions available for this election. Please add positions in the election settings.
+                            </p>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Party /
+                                Affiliation</label>
+                            <input type="text" formControlName="party"
+                                class="block w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl text-slate-900 font-bold focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
+                                placeholder="e.g. Progressive Party">
                         </div>
                     </form>
                 </div>

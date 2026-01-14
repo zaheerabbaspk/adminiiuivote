@@ -8,6 +8,7 @@ export interface Election {
     endDate: string;
     status: ElectionStatus;
     createdAt: string;
+    positions?: string[];
 }
 
 export interface Candidate {
@@ -43,4 +44,35 @@ export interface DashboardStats {
     totalCandidates: number;
     totalVotesCast: number;
     activeElections: number;
+}
+
+export interface Token {
+    id: number;
+    token: string;
+    isUsed: boolean;
+}
+
+export interface TokenBatch {
+    batchId: string;
+    elections: { id: string; name: string }[];
+    tokens: Token[];
+}
+
+export interface CandidateResult {
+    id: number;
+    name: string;
+    position: string;
+    party: string;
+    election_id: string;
+    image_url: string;
+    vote_count: number;
+    image: string;
+}
+
+export interface ElectionResult {
+    electionId: number;
+    electionName: string;
+    status: string;
+    totalVotes: number;
+    candidates: CandidateResult[];
 }

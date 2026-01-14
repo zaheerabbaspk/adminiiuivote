@@ -1,19 +1,9 @@
-import { Component, OnInit, HostListener, ElementRef } from '@angular/core';
+import { Component, OnInit, HostListener, ElementRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-
-interface Election {
-    id: string;
-    title: string;
-}
-
-interface TokenGroup {
-    id: string;
-    timestamp: Date;
-    elections: Election[];
-    tokens: string[];
-}
+import { VotingService } from '../../services/voting.service';
+import { Election, TokenBatch } from '../../models/models';
 
 @Component({
     selector: 'app-tokens',
@@ -22,23 +12,21 @@ interface TokenGroup {
     imports: [CommonModule, FormsModule, IonicModule]
 })
 export class TokensPage implements OnInit {
-    availableElections: Election[] = [
-        { id: '1', title: 'Library President' },
-        { id: '2', title: 'Sports President' },
-        { id: '3', title: 'Societies Lead' },
-        { id: '4', title: 'Batch Representative' }
-    ];
+    private votingService = inject(VotingService);
+    private eRef = inject(ElementRef);
+
+    availableElections = this.votingService.elections;
+    tokenBatches = this.votingService.tokenBatches;
 
     selectedElections: Election[] = [];
     tokenCount = 0;
-    tokenGroups: TokenGroup[] = [];
-    selectedGroup: TokenGroup | null = null;
+    selectedGroup: TokenBatch | null = null;
 
     isElectionDropdownOpen = false;
 
-    constructor(private eRef: ElementRef) { }
-
-    ngOnInit() { }
+    async ngOnInit() {
+        await this.votingService.getTokenBatches();
+    }
 
     @HostListener('document:click', ['$event'])
     clickout(event: any) {
@@ -66,42 +54,38 @@ export class TokensPage implements OnInit {
         return this.selectedElections.some(e => e.id === election.id);
     }
 
-    generateTokens() {
+    async generateTokens() {
         if (this.selectedElections.length === 0 || this.tokenCount <= 0) {
             return;
         }
 
-        const newTokens: string[] = [];
-        for (let i = 0; i < this.tokenCount; i++) {
-            const token = Math.floor(100000 + Math.random() * 900000).toString();
-            newTokens.push(token);
+        try {
+            const electionIds = this.selectedElections.map(e => e.id);
+            await this.votingService.generateTokens(electionIds, this.tokenCount);
+
+            // Reset form
+            this.selectedElections = [];
+            this.tokenCount = 0;
+            this.isElectionDropdownOpen = false;
+
+            // Optionally select the latest batch
+            const batches = this.tokenBatches();
+            if (batches.length > 0) {
+                this.selectedGroup = batches[0];
+            }
+        } catch (error) {
+            console.error('Failed to generate tokens:', error);
         }
-
-        const newGroup: TokenGroup = {
-            id: Math.random().toString(36).substr(2, 9),
-            timestamp: new Date(),
-            elections: [...this.selectedElections],
-            tokens: newTokens
-        };
-
-        this.tokenGroups.unshift(newGroup);
-        this.selectedGroup = newGroup; // Automatically view the new group
-
-        // Reset form
-        this.selectedElections = [];
-        this.tokenCount = 0;
-        this.isElectionDropdownOpen = false;
     }
 
     deleteGroup(groupId: string, event?: Event) {
         if (event) event.stopPropagation();
-        this.tokenGroups = this.tokenGroups.filter(g => g.id !== groupId);
-        if (this.selectedGroup?.id === groupId) {
-            this.selectedGroup = null;
-        }
+        // Backend doesn't have a delete endpoint specified yet in instructions, 
+        // so we'll just handle UI state if needed, but normally we'd call a service.
+        console.log('Delete batch:', groupId);
     }
 
-    viewGroup(group: TokenGroup) {
+    viewGroup(group: TokenBatch) {
         this.selectedGroup = group;
     }
 
@@ -109,9 +93,9 @@ export class TokensPage implements OnInit {
         this.selectedGroup = null;
     }
 
-    copyGroupTokens(tokens: string[], event?: Event) {
+    copyGroupTokens(tokens: any[], event?: Event) {
         if (event) event.stopPropagation();
-        const tokenText = tokens.join('\n');
+        const tokenText = tokens.map(t => typeof t === 'string' ? t : t.token).join('\n');
         navigator.clipboard.writeText(tokenText);
     }
 

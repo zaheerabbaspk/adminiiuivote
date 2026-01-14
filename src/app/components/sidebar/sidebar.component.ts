@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
     selector: 'app-sidebar',
@@ -10,6 +11,8 @@ import { IonicModule } from '@ionic/angular';
     imports: [CommonModule, RouterLink, RouterLinkActive, IonicModule]
 })
 export class SidebarComponent {
+    authService = inject(AuthService);
+
     navItems = [
         { label: 'Dashboard', icon: 'grid-outline', route: '/admin/dashboard' },
         { label: 'Elections', icon: 'list-outline', route: '/admin/elections' },

@@ -1,7 +1,7 @@
 
 import { Injectable, signal, computed, effect, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Election, ElectionStatus, Candidate, Voter, AuditLog, DashboardStats } from '../models/models';
+import { Election, ElectionStatus, Candidate, Voter, AuditLog, DashboardStats, TokenBatch, ElectionResult } from '../models/models';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -17,12 +17,16 @@ export class VotingService {
     private candidatesSignal = signal<Candidate[]>([]);
     private votersSignal = signal<Voter[]>([]);
     private auditLogsSignal = signal<AuditLog[]>(this.loadFromStorage('auditLogs', []));
+    private tokenBatchesSignal = signal<TokenBatch[]>([]);
+    private resultsSignal = signal<ElectionResult[]>([]);
 
     // Public readonly signals
     readonly elections = this.electionsSignal.asReadonly();
     readonly candidates = this.candidatesSignal.asReadonly();
     readonly voters = this.votersSignal.asReadonly();
     readonly auditLogs = this.auditLogsSignal.asReadonly();
+    readonly tokenBatches = this.tokenBatchesSignal.asReadonly();
+    readonly results = this.resultsSignal.asReadonly();
 
     // State flags
     public initialized = signal(false);
@@ -108,18 +112,20 @@ export class VotingService {
                 description: election.description,
                 startDate: election.startDate,
                 endDate: election.endDate,
-                status: election.status
+                status: election.status,
+                positions: election.positions || []
             }));
             await this.loadInitialData();
             this.addAuditLog('Admin', 'CREATE', 'Election', `Created election: ${election.name}`);
         } catch (error) {
             console.error('Error adding election:', error);
+            throw error;
         }
     }
 
     async updateElectionStatus(id: string, status: Election['status']) {
         try {
-            await firstValueFrom(this.http.put(`${this.apiUrl}/elections/${id}`, { status }));
+            await firstValueFrom(this.http.patch(`${this.apiUrl}/elections/${id}/status?status=${status}`, {}));
             this.electionsSignal.update(list =>
                 list.map(e => e.id === id ? { ...e, status } : e)
             );
@@ -129,14 +135,48 @@ export class VotingService {
         }
     }
 
+    async deleteElection(id: string) {
+        try {
+            await firstValueFrom(this.http.delete(`${this.apiUrl}/elections/${id}`));
+            this.electionsSignal.update(list => list.filter(e => e.id !== id));
+            this.addAuditLog('Admin', 'DELETE', 'Election', `Deleted election with ID: ${id}`);
+        } catch (error) {
+            console.error('Error deleting election:', error);
+        }
+    }
+
+    async updateElection(id: string, electionData: Partial<Election>) {
+        try {
+            await firstValueFrom(this.http.put(`${this.apiUrl}/elections/${id}`, electionData));
+            await this.loadInitialData(); // Refresh to get updated data
+            this.addAuditLog('Admin', 'UPDATE', 'Election', `Updated election with ID: ${id}`);
+        } catch (error) {
+            console.error('Error updating election:', error);
+            throw error;
+        }
+    }
+
     // --- Candidate Actions ---
     async addCandidate(candidate: Omit<Candidate, 'id' | 'votes'>) {
         try {
-            await firstValueFrom(this.http.post(`${this.apiUrl}/candidates`, candidate));
+            // Convert imageUrl to imageBase64 for backend
+            const payload: any = {
+                name: candidate.name,
+                position: candidate.position,
+                party: candidate.party,
+                electionId: candidate.electionId
+            };
+
+            if (candidate.imageUrl) {
+                payload.imageBase64 = candidate.imageUrl;
+            }
+
+            await firstValueFrom(this.http.post(`${this.apiUrl}/candidates`, payload));
             await this.loadInitialData();
             this.addAuditLog('Admin', 'CREATE', 'Candidate', `Added candidate: ${candidate.name}`);
         } catch (error) {
             console.error('Error adding candidate:', error);
+            throw error;
         }
     }
 
@@ -171,6 +211,37 @@ export class VotingService {
         );
     }
 
+    // --- Token Actions ---
+    async getTokenBatches() {
+        try {
+            const batches = await firstValueFrom(this.http.get<TokenBatch[]>(`${this.apiUrl}/admin/get-tokens`));
+            this.tokenBatchesSignal.set(batches);
+        } catch (error) {
+            console.error('Error fetching token batches:', error);
+        }
+    }
+
+    async generateTokens(electionIds: string[], count: number) {
+        try {
+            await firstValueFrom(this.http.post(`${this.apiUrl}/tokens/generate`, { electionIds, count }));
+            await this.getTokenBatches(); // Refresh list after generation
+            this.addAuditLog('Admin', 'GENERATE', 'Tokens', `Generated ${count} tokens for ${electionIds.length} elections`);
+        } catch (error) {
+            console.error('Error generating tokens:', error);
+            throw error;
+        }
+    }
+
+    // --- Results Actions ---
+    async getResults() {
+        try {
+            const results = await firstValueFrom(this.http.get<ElectionResult[]>(`${this.apiUrl}/admin/results`));
+            this.resultsSignal.set(results);
+        } catch (error) {
+            console.error('Error fetching results:', error);
+        }
+    }
+
     // --- Audit Log ---
     private addAuditLog(actorId: string, action: string, targetEntity: string, details: string) {
         const log: AuditLog = {
@@ -182,6 +253,19 @@ export class VotingService {
             details
         };
         this.auditLogsSignal.update(list => [log, ...list]);
+    }
+
+    // --- Get positions for an election ---
+    async getElectionPositions(electionId: string): Promise<string[]> {
+        try {
+            const response = await firstValueFrom(
+                this.http.get<{ electionId: string, positions: string[] }>(`${this.apiUrl}/elections/${electionId}/positions`)
+            );
+            return response.positions || [];
+        } catch (error) {
+            console.error('Error fetching election positions:', error);
+            return [];
+        }
     }
 
     // --- Storage Helper ---

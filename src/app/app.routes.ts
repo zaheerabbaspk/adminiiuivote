@@ -20,6 +20,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/elections/election-create/election-create.page').then(m => m.ElectionCreatePage)
       },
       {
+        path: 'elections/edit/:id',
+        loadComponent: () => import('./pages/elections/election-create/election-create.page').then(m => m.ElectionCreatePage)
+      },
+      {
         path: 'candidates',
         loadComponent: () => import('./pages/candidates/candidate-management.page').then(m => m.CandidateManagementPage)
       },

@@ -32,7 +32,7 @@
                             class="min-h-[50px] p-2 bg-slate-50 border border-slate-200 rounded-xl flex flex-wrap gap-2 items-center">
                             <div *ngFor="let election of selectedElections"
                                 class="flex items-center space-x-1.5 bg-blue-600 text-white px-2.5 py-1.5 rounded-lg text-xs font-medium animate-in fade-in zoom-in duration-200">
-                                <span>{{ election.title }}</span>
+                                <span>{{ election.name }}</span>
                                 <button (click)="removeElection(election)"
                                     class="hover:bg-blue-700 rounded-full p-0.5 transition-colors">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -51,9 +51,9 @@
                         <!-- Filterable Dropdown -->
                         <div *ngIf="isElectionDropdownOpen"
                             class="absolute z-50 mt-2 w-full bg-white border border-slate-200 rounded-xl shadow-xl p-2 max-h-56 overflow-y-auto animate-in slide-in-from-top-2 duration-200">
-                            <div *ngFor="let election of availableElections" (click)="toggleElection(election)"
+                            <div *ngFor="let election of availableElections()" (click)="toggleElection(election)"
                                 class="flex items-center justify-between px-4 py-2.5 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors group">
-                                <span class="text-sm text-slate-700 font-medium">{{ election.title }}</span>
+                                <span class="text-sm text-slate-700 font-medium">{{ election.name }}</span>
                                 <div class="h-5 w-5 rounded border border-slate-300 flex items-center justify-center transition-colors"
                                     [class.bg-blue-600]="isSelected(election)"
                                     [class.border-blue-600]="isSelected(election)">
@@ -106,7 +106,7 @@
             <div *ngIf="!selectedGroup"
                 class="p-6 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
                 <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest">Token Batches</h3>
-                <span class="text-xs font-bold text-slate-400">{{ tokenGroups.length }} Batches Recorded</span>
+                <span class="text-xs font-bold text-slate-400">{{ tokenBatches().length }} Batches Recorded</span>
             </div>
 
             <!-- Detail View Header -->
@@ -131,7 +131,7 @@
                                     d="M15.75 17.25v3.375a1.125 1.125 0 0 1-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
                             </svg>
                         </button>
-                        <button (click)="deleteGroup(selectedGroup.id)"
+                        <button (click)="deleteGroup(selectedGroup.batchId)"
                             class="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
                             title="Delete">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
@@ -145,16 +145,16 @@
                 <div class="flex flex-wrap gap-1.5">
                     <span *ngFor="let e of selectedGroup.elections"
                         class="text-[10px] font-black bg-blue-600 text-white px-2.5 py-1 rounded-md uppercase tracking-widest">{{
-                        e.title }}</span>
+                        e.name }}</span>
                 </div>
                 <p class="text-[10px] font-bold text-slate-500 mt-2 uppercase tracking-tighter">{{
-                    selectedGroup.timestamp | date:'medium' }} • {{ selectedGroup.tokens.length }} Tokens</p>
+                    selectedGroup.tokens.length }} Tokens • Batch: {{ selectedGroup.batchId }}</p>
             </div>
 
             <!-- Scrollable Content -->
             <div class="flex-1 overflow-y-auto custom-scrollbar p-6 bg-slate-50/20">
                 <!-- No Content State -->
-                <div *ngIf="tokenGroups.length === 0"
+                <div *ngIf="tokenBatches().length === 0"
                     class="h-full flex flex-col items-center justify-center text-center p-12">
                     <div
                         class="h-20 w-20 bg-slate-100 rounded-full flex items-center justify-center mb-4 text-slate-300">
@@ -170,21 +170,21 @@
                 </div>
 
                 <!-- Master View: Batch List -->
-                <div *ngIf="!selectedGroup && tokenGroups.length > 0" class="space-y-4">
-                    <div *ngFor="let group of tokenGroups" (click)="viewGroup(group)"
+                <div *ngIf="!selectedGroup && tokenBatches().length > 0" class="space-y-4">
+                    <div *ngFor="let group of tokenBatches()" (click)="viewGroup(group)"
                         class="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between cursor-pointer hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/5 transition-all group animate-in slide-in-from-bottom-2 duration-300">
                         <div class="space-y-3">
                             <div class="flex flex-wrap gap-1.5">
                                 <span *ngFor="let e of group.elections"
                                     class="text-[10px] font-black text-slate-400 group-hover:text-blue-600 transition-colors uppercase tracking-widest">{{
-                                    e.title }}</span>
+                                    e.name }}</span>
                             </div>
                             <div class="flex items-center space-x-3 text-xs font-bold text-slate-800">
                                 <span
                                     class="bg-slate-100 px-2 py-0.5 rounded text-[10px] uppercase group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">{{
                                     group.tokens.length }} Tokens</span>
                                 <span class="text-slate-400">•</span>
-                                <span class="text-slate-400">{{ group.timestamp | date:'short' }}</span>
+                                <span class="text-slate-400">ID: {{ group.batchId }}</span>
                             </div>
                         </div>
                         <div class="flex items-center space-x-2">
@@ -197,7 +197,7 @@
                                         d="M15.75 17.25v3.375a1.125 1.125 0 0 1-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
                                 </svg>
                             </button>
-                            <button (click)="deleteGroup(group.id, $event)"
+                            <button (click)="deleteGroup(group.batchId, $event)"
                                 class="p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
                                 title="Delete">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
@@ -218,11 +218,15 @@
                 <!-- Detail View: Token Grid -->
                 <div *ngIf="selectedGroup" class="animate-in fade-in zoom-in-95 duration-300">
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        <div *ngFor="let token of selectedGroup.tokens"
+                        <div *ngFor="let t of selectedGroup.tokens"
                             class="bg-white border border-slate-200 rounded-2xl p-4 flex items-center justify-between shadow-sm hover:border-blue-400 group/token transition-all">
-                            <span class="text-lg font-black text-slate-900 tracking-[0.2em] font-mono">{{ token
-                                }}</span>
-                            <button (click)="copySingleToken(token)"
+                            <div class="flex flex-col">
+                                <span class="text-lg font-black text-slate-900 tracking-[0.2em] font-mono"
+                                    [class.line-through]="t.isUsed" [class.opacity-50]="t.isUsed">{{ t.token }}</span>
+                                <span *ngIf="t.isUsed" class="text-[10px] text-rose-500 font-bold uppercase">Already
+                                    Used</span>
+                            </div>
+                            <button (click)="copySingleToken(t.token)"
                                 class="p-1.5 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all opacity-0 group-hover/token:opacity-100"
                                 title="Copy">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
