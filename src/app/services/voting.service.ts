@@ -242,6 +242,29 @@ export class VotingService {
         }
     }
 
+    // --- Token Management Actions ---
+    async deleteToken(tokenId: number) {
+        try {
+            await firstValueFrom(this.http.delete(`${this.apiUrl}/admin/tokens/${tokenId}`));
+            await this.getTokenBatches(); // Refresh batches to reflect deleted token
+            this.addAuditLog('Admin', 'DELETE', 'Token', `Deleted token ID: ${tokenId}`);
+        } catch (error) {
+            console.error('Error deleting token:', error);
+            throw error;
+        }
+    }
+
+    async deleteBatch(batchId: string) {
+        try {
+            await firstValueFrom(this.http.delete(`${this.apiUrl}/admin/batches/${batchId}`));
+            this.tokenBatchesSignal.update(list => list.filter(b => b.batchId !== batchId));
+            this.addAuditLog('Admin', 'DELETE', 'TokenBatch', `Deleted batch ID: ${batchId}`);
+        } catch (error) {
+            console.error('Error deleting batch:', error);
+            throw error;
+        }
+    }
+
     // --- Audit Log ---
     private addAuditLog(actorId: string, action: string, targetEntity: string, details: string) {
         const log: AuditLog = {

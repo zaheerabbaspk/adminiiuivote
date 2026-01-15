@@ -46,6 +46,14 @@ export class TokensPage implements OnInit {
         }
     }
 
+    selectAll() {
+        if (this.selectedElections.length === this.availableElections().length) {
+            this.selectedElections = [];
+        } else {
+            this.selectedElections = [...this.availableElections()];
+        }
+    }
+
     removeElection(election: Election) {
         this.selectedElections = this.selectedElections.filter(e => e.id !== election.id);
     }
@@ -80,9 +88,29 @@ export class TokensPage implements OnInit {
 
     deleteGroup(groupId: string, event?: Event) {
         if (event) event.stopPropagation();
-        // Backend doesn't have a delete endpoint specified yet in instructions, 
-        // so we'll just handle UI state if needed, but normally we'd call a service.
-        console.log('Delete batch:', groupId);
+        if (confirm('Are you sure you want to delete this entire batch? This action cannot be undone.')) {
+            this.votingService.deleteBatch(groupId).then(() => {
+                if (this.selectedGroup?.batchId === groupId) {
+                    this.selectedGroup = null;
+                }
+            }).catch(err => {
+                alert('Failed to delete batch. Please try again.');
+            });
+        }
+    }
+
+    async deleteSingleToken(tokenId: number) {
+        if (confirm('Delete this token?')) {
+            try {
+                await this.votingService.deleteToken(tokenId);
+                // Update local selectedGroup reference if it's the one we're viewing
+                if (this.selectedGroup) {
+                    this.selectedGroup.tokens = this.selectedGroup.tokens.filter((t: any) => t.id !== tokenId);
+                }
+            } catch (error) {
+                alert('Failed to delete token.');
+            }
+        }
     }
 
     viewGroup(group: TokenBatch) {
